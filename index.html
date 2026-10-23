@@ -105,6 +105,10 @@ body{
 .card h1{font-size:46px}
 .card h2{font-size:34px}
 .card p{margin:0;font-size:15px;line-height:1.65}
+.rules{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:15px;line-height:1.5}
+.rules li{display:flex;gap:10px;align-items:flex-start}
+.rules li::before{content:"";flex:none;width:9px;height:9px;margin-top:.5em;border-radius:50%;background:var(--pop);border:2px solid var(--ink)}
+.rules b{font-weight:400;color:var(--pop)}
 .legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .legend div{display:flex;gap:8px;align-items:center;min-width:0}
 .legend b{display:block;font-weight:400;font-size:14px}
@@ -177,16 +181,12 @@ body{
   <div class="card">
     <div class="eyebrow">一二三木頭人 × 擠痘痘</div>
     <h1>擠痘木頭人</h1>
-    <p>你是滿臉痘痘的病人，趁皮膚科醫師背對你打病歷時偷偷擠。醫師會跟著音樂唸「被我抓到你在擠痘痘你就完蛋了」，<b>音樂一唱完她就回頭</b>，手還在臉上就出局，被看到一次就結束。</p>
-    <p><b>痘痘會一直長：</b>醫師每唱完一輪，臉上就多冒 1～2 顆。畫面左邊的「不開心」量表會隨痘痘變多而上升，擠掉痘痘就會下降，爆表（20 顆痘痘）就出局，所以每一輪都得擠。</p>
-    <div class="legend">
-      <div><span class="dot white"></span><span><b>白頭粉刺</b><small>按一下就出來</small></span></div>
-      <div><span class="dot pus"></span><span><b>膿皰</b><small>要按久一點，分數最高</small></span></div>
-      <div><span class="dot black"></span><span><b>黑頭粉刺</b><small>小小一顆，很快</small></span></div>
-    </div>
-    <p><b>玩法：</b>手指按住痘痘不放就是在擠，放開會保留進度，下次接著擠。每輪開頭會先響兩聲「嗒、嗒」，用這一輪的速度打拍子。音樂有 1 倍到 3 倍五種速度，每輪都不一樣，而且整體會越來越快。醫師中途轉一半是假動作，跟著音樂就不會被騙。</p>
-    <p><b>護理師：</b>從第二輪開始，護理師會從門口走過。先聽到「叩、叩」的腳步聲，她走在畫面上時就不能擠。後面有時會一次來兩個，可能一前一後，也可能從兩邊各來一個。</p>
-    <p><b>痘疤稱號：</b>每 50 分升一級，從「痘疤小屁孩」一路到「月球表面本尊」。分數越高越容易留下痘疤。</p>
+    <p>趁醫師背對你時，按住痘痘偷偷擠。</p>
+    <ul class="rules">
+      <li><span><b>音樂唱完</b>醫師就回頭，手要離開臉</span></li>
+      <li><span><b>聽到腳步聲</b>是護理師，她經過時別擠</span></li>
+      <li><span><b>痘痘會一直長</b>，左邊量表爆表就輸</span></li>
+    </ul>
     <button class="btn" id="startBtn" type="button">開始擠</button>
     <div class="best" id="bestStart"></div>
   </div>
