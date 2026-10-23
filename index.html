@@ -1,0 +1,1206 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="一二三木頭人玩法的擠痘痘小遊戲：趁皮膚科醫師背對你時偷偷擠痘痘，音樂唱完她就回頭，被抓到就出局。">
+<meta name="theme-color" content="#cfe6dd">
+<meta property="og:type" content="website">
+<meta property="og:title" content="擠痘木頭人">
+<meta property="og:description" content="趁醫師背對你時偷偷擠痘痘，音樂唱完她就回頭。你會是痘疤小屁孩，還是月球表面本尊？">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23f6d1b6' stroke='%232a2838' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23ec877d'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23ffe08a'/%3E%3C/svg%3E">
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-text-size-adjust:100%}body{font-size:14px}img{max-width:100%}</style>
+<title>擠痘木頭人</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Lilita+One&display=swap">
+<style>
+/* Layout: one-screen game. HUD strip, chant meter (一二三木頭人), canvas stage with mom in the doorway and your face up close; overlay cards for start / game over. Single committed look: bathroom-tile mint + ink outlines. */
+:root{
+  --tile:#cfe6dd;
+  --tile-line:#b7d6ca;
+  --ink:#2a2838;
+  --ink-soft:#5d5a6e;
+  --ink-faint:#86a59a;
+  --paper:#fffdf6;
+  --pop:#f0544a;
+  --warn:#f4b63f;
+  --mint-deep:#357f6c;
+  --f-display:"Huninn","jf open 粉圓","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  --f-num:"Lilita One","Huninn",system-ui,sans-serif;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;overflow:hidden;color:var(--ink);font-family:var(--f-display);
+  background-color:var(--tile);
+  background-image:linear-gradient(var(--tile-line) 2px,transparent 2px),linear-gradient(90deg,var(--tile-line) 2px,transparent 2px);
+  background-size:46px 46px;background-position:-1px -1px;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none;
+}
+#app{height:100%;display:flex;flex-direction:column}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hud{display:flex;align-items:center;gap:12px;padding-block:10px 4px}
+.stat{display:flex;align-items:center;gap:6px}
+.lab{font-size:13px;letter-spacing:.08em;color:var(--ink-soft)}
+.num{font-family:var(--f-num);font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
+.strikes i{width:15px;height:15px;border-radius:50%;border:2px solid var(--ink);background:var(--paper);display:inline-block}
+.strikes i.on{background:var(--pop)}
+.mood{position:absolute;z-index:2;top:10px;left:max(10px,env(safe-area-inset-left,0px));height:min(56%,340px);width:40px;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
+.mood-face{width:36px;height:36px;flex:none;overflow:visible;transition:transform .2s}
+.mood-face.bump{animation:moodBump .35s ease-out}
+@keyframes moodBump{40%{transform:scale(1.25) rotate(-8deg)}}
+.mf-skin{fill:#f6d1b6;stroke:var(--ink);stroke-width:2.4}
+.mood[data-mood="sad"] .mf-skin{fill:#f2bfa6}
+.mood[data-mood="angry"] .mf-skin{fill:#f39a8e}
+.mf-eye{fill:var(--ink)}
+.mf{display:none;fill:none;stroke:var(--ink);stroke-width:2.4;stroke-linecap:round}
+.mood[data-mood="happy"] .m-happy,.mood[data-mood="meh"] .m-meh,.mood[data-mood="sad"] .m-sad,.mood[data-mood="angry"] .m-angry{display:inline}
+.mood-track{position:relative;flex:1;width:20px;border:3px solid var(--ink);border-radius:999px;background:var(--paper);overflow:hidden;display:flex;align-items:flex-end;box-shadow:2px 2px 0 var(--ink)}
+.mood-track::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to top,transparent 0 calc(25% - 2px),rgba(42,40,56,.28) calc(25% - 2px) 25%)}
+.mood-fill{width:100%;height:0;background:hsl(130 62% 50%);transition:height .35s ease-out,background-color .35s}
+.mood.danger .mood-track{animation:moodPulse .8s ease-in-out infinite}
+@keyframes moodPulse{50%{box-shadow:2px 2px 0 var(--ink),0 0 0 5px rgba(240,84,74,.45)}}
+.mood-lab{font-size:11px;letter-spacing:.06em;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:1px 5px;white-space:nowrap}
+.spacer{flex:1}
+.mute{font:inherit;font-size:13px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:4px 10px;cursor:pointer}
+.chant{display:flex;flex-direction:column;align-items:center;gap:6px;padding-block:4px 8px}
+.syls{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:3px;width:100%;max-width:560px}
+.syls span{aspect-ratio:1;display:grid;place-items:center;border-radius:8px;background:var(--tile-line);color:var(--ink-faint);font-size:clamp(13px,4.2vw,22px);line-height:1;transition:transform .1s,background .1s,color .1s}
+.row2{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 8px;width:100%;max-width:560px}
+.row2r{display:flex;align-items:center;gap:6px}
+.rank{display:flex;align-items:center;gap:5px;font-size:14px;padding:2px 12px 2px 5px;border-radius:999px;background:var(--paper);border:2px solid var(--ink);white-space:nowrap}
+.badge{width:24px;height:28px;flex:none;overflow:visible}
+.badge .medal{fill:var(--b1,#e7a873);stroke:var(--ink);stroke-width:2}
+.badge .rim{fill:none;stroke:var(--b2,#a8693a);stroke-width:2}
+.badge .rib{fill:var(--rb,#7aa6d8);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.badge .cr{fill:none;stroke:var(--b2,#a8693a);stroke-width:1.4;opacity:var(--cr,0)}
+.badge .lv{font-family:var(--f-num);font-size:11px;fill:var(--ink);text-anchor:middle}
+.tempo{font-size:13px;padding:3px 10px;border-radius:999px;border:2px solid var(--ink);background:var(--paper);white-space:nowrap}
+.tempo.slow{background:#cfe6ff}
+.tempo.fast{background:#ffd5a1}
+.tempo.tick{animation:tick .2s ease-out}
+@keyframes tick{50%{transform:scale(1.18)}}
+.rank.up{animation:rankUp .6s ease-out}
+@keyframes rankUp{0%{transform:scale(1)}40%{transform:scale(1.18);background:var(--warn)}100%{transform:scale(1)}}
+.syls span.lit{background:var(--paper);color:var(--ink);transform:translateY(-2px);box-shadow:0 2px 0 var(--ink)}
+.syls span.hit{background:var(--pop);color:var(--paper)}
+.status{font-size:14px;padding:4px 11px;border-radius:999px;background:var(--mint-deep);color:var(--paper);white-space:nowrap}
+.status.warn{background:var(--warn);color:var(--ink)}
+.status.look{background:var(--pop);color:var(--paper)}
+.stage{position:relative;flex:1;min-height:0}
+#cv{position:absolute;inset:0;display:block;width:100%;height:100%;cursor:pointer}
+.toast{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);font-size:28px;padding:8px 18px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);white-space:nowrap;pointer-events:none;animation:toastIn .45s ease-out}
+.toast.bad{background:var(--pop);color:var(--paper)}
+@keyframes toastIn{0%{transform:translate(-50%,-50%) scale(.6)}60%{transform:translate(-50%,-50%) scale(1.08)}100%{transform:translate(-50%,-50%) scale(1)}}
+
+.overlay{position:fixed;inset:0;z-index:5;display:grid;place-items:center;overflow:auto;touch-action:pan-y;background:rgba(42,40,56,.4);
+  padding-top:max(16px,env(safe-area-inset-top,0px));padding-bottom:max(16px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.card{width:100%;max-width:420px;background:var(--paper);border:3px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink);padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-size:13px;letter-spacing:.14em;color:var(--mint-deep)}
+.card h1,.card h2{margin:0;line-height:1.05;text-wrap:balance;font-weight:400}
+.card h1{font-size:46px}
+.card h2{font-size:34px}
+.card p{margin:0;font-size:15px;line-height:1.65}
+.legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.legend div{display:flex;gap:8px;align-items:center;min-width:0}
+.legend b{display:block;font-weight:400;font-size:14px}
+.legend small{display:block;font-size:12px;color:var(--ink-soft);line-height:1.35}
+.dot{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--ink)}
+.dot.white{background:radial-gradient(circle,#fffaf0 0 30%,#f2b49d 34% 100%)}
+.dot.pus{background:radial-gradient(circle,#ffdf86 0 36%,#ea7a73 40% 100%)}
+.dot.black{background:radial-gradient(circle,#3a2e2a 0 24%,#f1c3a7 28% 100%)}
+.dot.red{background:radial-gradient(circle at 36% 32%,#ffd6d0 0 12%,#de4f59 16% 100%)}
+.btn{font:inherit;font-size:22px;color:var(--paper);background:var(--pop);border:3px solid var(--ink);border-radius:16px;padding:12px 18px;box-shadow:0 5px 0 var(--ink);cursor:pointer}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+:focus-visible{outline:3px solid var(--mint-deep);outline-offset:3px}
+.best{font-size:13px;color:var(--ink-soft);text-align:center}
+.result{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.result .big{font-family:var(--f-num);font-size:64px;line-height:.9;font-variant-numeric:tabular-nums}
+.result .meta{font-size:14px;color:var(--ink-soft);line-height:1.6}
+.tip{background:var(--tile);border-radius:14px;padding:10px 12px;font-size:13.5px;line-height:1.6}
+.endrank{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--ink-soft)}
+.endrank .badge{width:46px;height:54px}
+.portrait{display:block;width:100%;max-width:280px;aspect-ratio:1;align-self:center;border:3px solid var(--ink);border-radius:18px;background:var(--tile)}
+.sev{display:inline-block;margin-top:4px;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--pop);color:var(--paper)}
+.endrank b{display:block;font-weight:400;font-size:28px;color:var(--ink);line-height:1.2}
+.ladder summary{cursor:pointer;font-size:14px;color:var(--mint-deep)}
+.ladder ol{margin:10px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:5px 12px;font-size:13px}
+.ladder li{display:flex;gap:6px;min-width:0;color:var(--ink-soft)}
+.ladder li span{flex:none;min-width:3.4em;text-align:right;font-variant-numeric:tabular-nums}
+.ladder li.got{color:var(--ink)}
+.ladder li.got span{color:var(--mint-deep)}
+.ladder li.now{color:var(--pop)}
+.ladder li.now span{color:var(--pop)}
+@media (max-width:380px){.num{font-size:22px}.card h1{font-size:40px}}
+@media (prefers-reduced-motion:reduce){.toast{animation:none}.syls span{transition:none}.rank.up,.tempo.tick,.mood-face.bump,.mood.danger .mood-track{animation:none}}
+</style>
+
+</head>
+<body>
+<div id="app">
+  <header class="hud gutter">
+    <div class="stat"><span class="lab">分數</span><span id="score" class="num">0</span></div>
+    <div class="stat"><span class="lab">最佳</span><span id="bestHud" class="num">0</span></div>
+    <div class="spacer"></div>
+    <button id="muteBtn" class="mute" type="button">音效 開</button>
+  </header>
+  <div class="chant gutter">
+    <div class="syls" id="syls" aria-hidden="true"><span>被</span><span>我</span><span>抓</span><span>到</span><span>你</span><span>在</span><span>擠</span><span>痘</span><span>痘</span><span>你</span><span>就</span><span>完</span><span>蛋</span><span>了</span></div>
+    <div class="row2">
+      <div class="rank" id="rank"><svg class="badge" id="rankBadge" viewBox="0 0 32 38" aria-hidden="true"><path class="rib" d="M10 22 6 36l6-3 3 4 2-12z"/><path class="rib" d="M22 22l4 14-6-3-3 4-2-12z"/><circle class="medal" cx="16" cy="15" r="12.5"/><circle class="rim" cx="16" cy="15" r="9.2"/><circle class="cr" cx="10.5" cy="10" r="2"/><circle class="cr" cx="22" cy="20.5" r="1.6"/><text class="lv" x="16" y="19">1</text></svg><span id="rankName">痘疤小屁孩</span></div>
+      <div class="row2r"><div class="status" id="status" role="status">醫師在打病歷</div></div>
+    </div>
+  </div>
+  <main class="stage" id="stage">
+    <canvas id="cv" aria-label="遊戲畫面：按住臉上的痘痘來擠"></canvas>
+    <div class="mood" id="mood" data-mood="happy" role="meter" aria-label="不開心程度" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0">
+      <svg class="mood-face" id="moodFace" viewBox="0 0 36 36" aria-hidden="true">
+        <circle class="mf-skin" cx="18" cy="18" r="15.5"/>
+        <circle class="mf-eye" cx="12.5" cy="15" r="2"/><circle class="mf-eye" cx="23.5" cy="15" r="2"/>
+        <path class="mf m-happy" d="M11 21 Q18 28 25 21"/>
+        <path class="mf m-meh" d="M12 23.5 H24"/>
+        <path class="mf m-sad" d="M11.5 25.5 Q18 19.5 24.5 25.5"/>
+        <path class="mf m-angry" d="M8.5 10.5 L15 13.2 M27.5 10.5 L21 13.2 M11.5 26 Q18 19.5 24.5 26"/>
+      </svg>
+      <div class="mood-track"><div class="mood-fill" id="moodFill"></div></div>
+      <div class="mood-lab">不開心</div>
+    </div>
+    <div id="toast" class="toast" hidden></div>
+  </main>
+</div>
+
+<div class="overlay" id="startScreen">
+  <div class="card">
+    <div class="eyebrow">一二三木頭人 × 擠痘痘</div>
+    <h1>擠痘木頭人</h1>
+    <p>你是滿臉痘痘的病人，趁皮膚科醫師背對你打病歷時偷偷擠。醫師會跟著音樂唸「被我抓到你在擠痘痘你就完蛋了」，<b>音樂一唱完她就回頭</b>，手還在臉上就出局，被看到一次就結束。</p>
+    <p><b>痘痘會一直長：</b>醫師每唱完一輪，臉上就多冒 1～2 顆。畫面左邊的「不開心」量表會隨痘痘變多而上升，擠掉痘痘就會下降，爆表（20 顆痘痘）就出局，所以每一輪都得擠。</p>
+    <div class="legend">
+      <div><span class="dot white"></span><span><b>白頭粉刺</b><small>按一下就出來</small></span></div>
+      <div><span class="dot pus"></span><span><b>膿皰</b><small>要按久一點，分數最高</small></span></div>
+      <div><span class="dot black"></span><span><b>黑頭粉刺</b><small>小小一顆，很快</small></span></div>
+    </div>
+    <p><b>玩法：</b>手指按住痘痘不放就是在擠，放開會保留進度，下次接著擠。每輪開頭會先響兩聲「嗒、嗒」，用這一輪的速度打拍子。音樂有 1 倍到 3 倍五種速度，每輪都不一樣，而且整體會越來越快。醫師中途轉一半是假動作，跟著音樂就不會被騙。</p>
+    <p><b>護理師：</b>從第二輪開始，護理師會從門口走過。先聽到「叩、叩」的腳步聲，她走在畫面上時就不能擠。後面有時會一次來兩個，可能一前一後，也可能從兩邊各來一個。</p>
+    <p><b>痘疤稱號：</b>每 50 分升一級，從「痘疤小屁孩」一路到「月球表面本尊」。分數越高越容易留下痘疤。</p>
+    <button class="btn" id="startBtn" type="button">開始擠</button>
+    <div class="best" id="bestStart"></div>
+  </div>
+</div>
+
+<div class="overlay" id="endScreen" hidden>
+  <div class="card">
+    <div class="eyebrow">擠痘木頭人・遊戲結束・截圖分享你的痘疤臉</div>
+    <h2 id="endTitle">被醫師抓包了！</h2>
+    <canvas id="portrait" class="portrait" aria-label="你的痘疤臉"></canvas>
+    <div class="result">
+      <div class="big" id="endScore">0</div>
+      <div class="meta" id="endMeta"></div>
+    </div>
+    <div class="endrank"><span id="endBadge"></span><div>你的稱號<b id="endRank">痘疤小屁孩</b><span class="sev" id="endSev">輕微痘疤</span></div></div>
+    <div class="tip"><b>現實中的小提醒：</b>別自己擠痘痘。紅腫、沒有頭的發炎痘越擠越深，容易留下紅印和凹疤，交給皮膚科處理比較安全。</div>
+    <button class="btn" id="againBtn" type="button">再擠一次</button>
+    <details class="ladder"><summary>看全部痘疤稱號</summary><ol id="ladder"></ol></details>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const cv=$('#cv'), stage=$('#stage');
+let ctx=cv.getContext('2d');
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rand=(a,b)=>a+Math.random()*(b-a);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const TAU=Math.PI*2;
+
+const C={
+  ink:'#2a2838', paper:'#fffdf6',
+  skin:'#f6d1b6', skinShade:'#e9b597', skinDark:'#d99a7c', blush:'rgba(240,130,120,.28)',
+  hair:'#2c2632', hairHi:'#463d4f',
+  pus:'#ffe08a', pusShade:'#efb94f', whiteHead:'#fffaf0', blackHead:'#3a2e2a',
+  red:'#e3555e', redDeep:'#bf3a47',
+  room:'#e3edf6', roomDeep:'#cddcea', desk:'#d5ad7e', deskDeep:'#bf9563', door:'#9fb3c4', doorDeep:'#7b90a3',
+  coat:'#ffffff', coatShade:'#dfe7ee', scrub:'#5fb3a5', pants:'#3d4a6b', docSkin:'#efc4a4', docHair:'#2f2832', docHairHi:'#55495a',
+  steth:'#33415c', monitor:'#4a5266', screen:'#c6e6f3',
+  finger:'#f0c3a3', nail:'#fbe3dc'
+};
+
+const TYPES={
+  white:{name:'白頭粉刺',hold:.55,pts:10,r:[7,9.5]},
+  pus:{name:'膿皰',hold:1.0,pts:25,r:[10,13.5]},
+  black:{name:'黑頭粉刺',hold:.35,pts:5,r:[5,6.5]}
+};
+
+let W=0,H=0,DPR=1;
+const face={x:0,y:0,rx:100,ry:120,k:1};
+const mom={x:0,y:0,s:1,state:'back',t:0,look:0,syl:-1,sched:[],cut:-1,warn:0,faceDur:0,angry:0,caughtThis:false,stir:0};
+const G={mode:'menu',score:0,phrases:0,startClock:0,lostAt:0,pimples:[],marks:[],parts:[],texts:[],held:null,heldBlocked:false,expr:'idle',exprT:0,shake:0,clock:0,endAt:0,roundAt:0};
+
+let best=0;
+try{best=parseInt(localStorage.getItem('pimple-mugwood-best')||'0',10)||0;}catch(e){}
+function saveBest(){try{localStorage.setItem('pimple-mugwood-best',String(best));}catch(e){}}
+
+/* ---------- sound (synthesized, starts after first tap) ---------- */
+let AC=null, muted=false;
+function ac(){
+  if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null;}}
+  if(AC&&AC.state==='suspended'){AC.resume().catch(()=>{});}
+  return AC;
+}
+function tone(freq,dur,type,vol,slide){
+  const a=ac(); if(!a||muted) return;
+  const o=a.createOscillator(), g=a.createGain(), t=a.currentTime;
+  o.type=type||'sine'; o.frequency.setValueAtTime(freq,t);
+  if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(30,freq+slide),t+dur);
+  g.gain.setValueAtTime(vol||.12,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.02);
+}
+function noise(dur,vol,freq){
+  const a=ac(); if(!a||muted) return;
+  const n=Math.floor(a.sampleRate*dur), b=a.createBuffer(1,n,a.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
+  const s=a.createBufferSource(), f=a.createBiquadFilter(), g=a.createGain(), t=a.currentTime;
+  f.type='bandpass'; f.frequency.value=freq||1800; f.Q.value=1.2;
+  g.gain.setValueAtTime(vol||.15,t);
+  s.buffer=b; s.connect(f).connect(g).connect(a.destination); s.start(t);
+}
+const SYL_F=[392,440,494,523,587,784];
+const sfx={
+  pop(big){tone(big?420:560,.1,'sine',.28,-360);noise(.07,big?.22:.14,big?1600:2600);},
+  chant(i){tone(SYL_F[i],i===5?.24:.13,'triangle',i===5?.2:.13);},
+  warn(){tone(660,.08,'square',.07);setTimeout(()=>tone(880,.1,'square',.07),90);},
+  turn(){tone(200,.16,'sawtooth',.06,-80);},
+  caught(){tone(150,.45,'square',.12,-50);tone(158,.45,'square',.08,-60);},
+  swell(){tone(120,.3,'sawtooth',.1,60);},
+  clear(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.14,'triangle',.13),i*90));},
+  tick(){tone(900,.03,'sine',.04);},
+  tease(){tone(300,.14,'triangle',.09,50);}
+};
+
+/* ---------- background music ----------
+   Each chant is one phrase: a 4-step count-in (two clicks) + 16 sung steps. The doctor turns the moment it ends.
+   Same tune every time; each phrase picks a speed from 1x to 3x, never the same speed twice in a row. */
+const NF=m=>440*Math.pow(2,(m-69)/12);
+const LEAD=4, STEPS=16;
+// 被我抓到你在擠痘痘 / 你就完蛋了: step 9 is a breath, 了 holds steps 14-15
+const SYL_STEP=[0,1,2,3,4,5,6,7,8,10,11,12,13,14];
+const TUNES=[
+  {name:'挑釁曲',lead:'square',vol:.045,
+   mel:{0:67,1:67,2:76,3:74,4:72,5:74,6:76,7:79,8:76,10:81,11:79,12:76,13:74,14:72},
+   bas:{0:48,2:55,4:48,6:55,8:53,10:55,12:43,14:48},kick:[0,4,8,12],snare:[]}
+];
+const SPEEDS=[1,1.5,2,2.5,3];
+// the base tempo climbs after every chant, on top of the per-chant speed
+const baseBpm=()=>Math.min(200,96+4.5*G.phrases);
+// how likely each speed is, by round (later rounds lean faster)
+const SPEED_W=[[3,3,2,1,1],[2,3,3,2,1],[1,2,3,3,2],[1,1,2,3,3]];
+const nowS=()=>performance.now()/1000;
+const music={phrase:null,timer:null,out:null,startedAt:0};
+let hatBuf=null;
+function tuneFor(){return TUNES[0];}
+function pickSpeed(prev){
+  const w=SPEED_W[Math.min(SPEED_W.length-1,Math.floor(G.phrases/4))];
+  let tot=0;SPEEDS.forEach((v,i)=>{if(v!==prev)tot+=w[i];});
+  let r=Math.random()*tot;
+  for(let i=0;i<SPEEDS.length;i++){if(SPEEDS[i]===prev)continue;r-=w[i];if(r<=0)return SPEEDS[i];}
+  return SPEEDS[0];
+}
+function mNote(freq,t,dur,type,vol){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type=type;o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(music.out);o.start(t);o.stop(t+dur+.03);
+}
+function mHat(t){
+  if(!hatBuf){const n=Math.floor(AC.sampleRate*.03);hatBuf=AC.createBuffer(1,n,AC.sampleRate);const d=hatBuf.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);}
+  const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
+  f.type='highpass';f.frequency.value=7000;g.gain.value=.05;
+  s.buffer=hatBuf;s.connect(f).connect(g).connect(music.out);s.start(t);
+}
+function mSnare(t){
+  const n=Math.floor(AC.sampleRate*.12),b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);
+  const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
+  f.type='bandpass';f.frequency.value=1800;f.Q.value=.8;g.gain.value=.12;
+  s.buffer=b;s.connect(f).connect(g).connect(music.out);s.start(t);
+}
+function mKick(t){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);
+  g.gain.setValueAtTime(.22,t);g.gain.exponentialRampToValueAtTime(.0001,t+.14);
+  o.connect(g).connect(music.out);o.start(t);o.stop(t+.16);
+}
+function mClick(t,hi){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type='square';o.frequency.setValueAtTime(hi?1500:1050,t);
+  g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.0001,t+.06);
+  o.connect(g).connect(music.out);o.start(t);o.stop(t+.08);
+}
+function musicTick(){
+  const ph=music.phrase;
+  if(!ph||!AC||AC.state!=='running'||!music.out)return;
+  const now=nowS(),offset=AC.currentTime-now,T=ph.tune;
+  while(ph.next<LEAD+STEPS){
+    const tp=ph.start+ph.next*ph.st;
+    if(tp>now+.15)break;
+    const j=ph.next++;
+    if(tp<now-.03||muted)continue;
+    const t=tp+offset;
+    if(j<LEAD){if(j%2===0)mClick(t,j===0);continue;}
+    const i=j-LEAD,last=i===14;
+    if(T.mel[i]!==undefined)mNote(NF(T.mel[i]),t,last?ph.st*1.9:ph.st*.85,T.lead,last?T.vol*1.3:T.vol);
+    if(T.bas[i]!==undefined)mNote(NF(T.bas[i]),t,ph.st*(last?2:1.8),'triangle',.14);
+    if(T.kick.includes(i))mKick(t);
+    if(T.snare.includes(i))mSnare(t);
+    if(i%2===1)mHat(t);
+  }
+}
+function musicPhrase(start,st,tune){
+  const a=ac();
+  if(a&&!music.out){music.out=a.createGain();music.out.gain.value=.9;music.out.connect(a.destination);}
+  if(!music.timer)music.timer=setInterval(musicTick,25);
+  music.phrase={start,st,tune,next:0};
+}
+function musicDuck(on){if(music.out&&AC)music.out.gain.setTargetAtTime(on?.3:.9,AC.currentTime,.06);}
+function musicPause(){music.phrase=null;}
+function musicReset(){music.phrase=null;music.startedAt=nowS();musicDuck(false);}
+
+/* ---------- 痘疤 ranks: one every 50 points ---------- */
+const RANKS=['痘疤小屁孩','痘疤菜鳥','痘疤見習生','痘疤老鳥','痘疤達人','痘疤職人','痘疤學士','痘疤碩士','痘疤博士','痘疤教授',
+  '痘疤狂人','痘疤魔人','痘疤戰士','痘疤騎士','痘疤將軍','痘疤元帥','痘疤霸主','痘疤大魔王','痘疤宗師','痘疤武林盟主',
+  '痘疤天王','痘疤皇帝','痘疤至尊','痘疤仙人','痘疤天尊','痘疤之神','痘疤創世神','痘疤宇宙主宰','行走的月球表面','月球表面本尊'];
+const rankOf=s=>Math.min(RANKS.length-1,Math.floor(s/50));
+
+/* ---------- layout & drawing helpers ---------- */
+const FONT='"Huninn","jf open 粉圓","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
+function layout(){
+  const r=stage.getBoundingClientRect();
+  W=Math.max(1,r.width); H=Math.max(1,r.height);
+  DPR=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  const fr=Math.min(W*0.36,H*0.245);
+  face.rx=fr; face.ry=fr*1.18; face.k=fr/130;
+  face.x=W/2; face.y=H-face.ry-Math.max(6,H*0.015);
+  mom.s=clamp(Math.min(H*0.37/240,W/380),0.4,1.3);
+  mom.x=W/2; mom.y=H*0.43;
+}
+const fx=u=>face.x+u*face.rx, fy=v=>face.y+v*face.ry;
+function ell(x,y,rx,ry){ctx.beginPath();ctx.ellipse(x,y,Math.max(.1,rx),Math.max(.1,ry),0,0,TAU);}
+function circ(x,y,r){ell(x,y,r,r);}
+function rr(x,y,w,h,r){
+  ctx.beginPath();
+  if(ctx.roundRect){ctx.roundRect(x,y,w,h,r);return;}
+  ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function line(x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
+function limb(pts,sleeve,skin,w){
+  ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.strokeStyle=C.ink;ctx.lineWidth=w+6;
+  ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.stroke();
+  ctx.strokeStyle=skin;ctx.lineWidth=w;ctx.stroke();
+  ctx.strokeStyle=sleeve;ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+  const m=[(pts[0][0]+pts[1][0])/2,(pts[0][1]+pts[1][1])/2];ctx.lineTo(m[0],m[1]);ctx.stroke();
+}
+function bubbleText(txt,x,y,size,fill,stroke){
+  ctx.font=size+'px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.lineWidth=size*.22;ctx.strokeStyle=stroke;ctx.strokeText(txt,x,y);
+  ctx.fillStyle=fill;ctx.fillText(txt,x,y);
+}
+
+/* ---------- the dermatologist in the exam-room doorway ---------- */
+function arm(pts,sleeve,skin,w){
+  ctx.lineCap='round';ctx.lineJoin='round';
+  const path=()=>{ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);};
+  ctx.strokeStyle=C.ink;ctx.lineWidth=w+6;path();ctx.stroke();
+  ctx.strokeStyle=skin;ctx.lineWidth=w-2;path();ctx.stroke();
+  const a=pts[pts.length-2],b=pts[pts.length-1],m=[a[0]+(b[0]-a[0])*.7,a[1]+(b[1]-a[1])*.7];
+  ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length-1;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.lineTo(m[0],m[1]);
+  ctx.strokeStyle=C.ink;ctx.lineWidth=w+3;ctx.stroke();
+  ctx.strokeStyle=sleeve;ctx.lineWidth=w;ctx.stroke();
+}
+function drawMom(){
+  const s=mom.s, front=mom.look>.5, sx=.3+.7*Math.abs(Math.cos(mom.look*Math.PI));
+  const jx=mom.warn>0&&!reduceMotion?Math.sin(G.clock*70)*2.5:0;
+  ctx.save();ctx.translate(mom.x,mom.y);ctx.scale(s,s);
+  ctx.lineJoin='round';ctx.lineCap='round';
+  // doorway + exam room
+  ctx.fillStyle=C.doorDeep;rr(-104,-278,208,310,16);ctx.fill();
+  ctx.fillStyle=C.door;rr(-98,-272,196,304,12);ctx.fill();
+  ctx.fillStyle=C.room;rr(-86,-260,172,292,8);ctx.fill();
+  ctx.save();rr(-86,-260,172,292,8);ctx.clip();
+  ctx.fillStyle=C.roomDeep;ctx.fillRect(-86,-150,172,190);
+  // skin-layers poster: epidermis / dermis / subcutis
+  ctx.strokeStyle=C.ink;ctx.lineWidth=2;
+  ctx.fillStyle='#fff';rr(-78,-248,46,58,4);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#f6cdb2';ctx.fillRect(-73,-241,36,8);
+  ctx.fillStyle='#f1a99c';ctx.fillRect(-73,-233,36,18);
+  ctx.fillStyle='#f7e2a0';ctx.fillRect(-73,-215,36,16);
+  ctx.strokeStyle='#5d5a6e';ctx.lineWidth=1.4;line(-62,-244,-60,-222);line(-50,-244,-48,-220);
+  // desk + monitor showing the chart
+  ctx.fillStyle=C.desk;ctx.fillRect(-86,-124,172,14);
+  ctx.fillStyle=C.deskDeep;ctx.fillRect(-86,-110,172,150);
+  ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;
+  ctx.fillStyle=C.monitor;rr(64,-136,8,14,2);ctx.fill();
+  rr(40,-178,54,42,5);ctx.fill();ctx.stroke();
+  ctx.fillStyle=C.screen;rr(44,-174,46,32,3);ctx.fill();
+  ctx.strokeStyle='#5a8fb0';ctx.lineWidth=2;
+  const typed=Math.floor(G.clock*7);
+  for(let i=0;i<4;i++)line(48,-168+i*7,48+8+((i*11+typed)%26),-168+i*7);
+  ctx.restore();
+
+  // the figure (squashed horizontally while turning)
+  ctx.save();ctx.translate(jx,0);ctx.scale(sx,1);
+  const bob=mom.state==='back'?Math.sin(mom.stir*2.4)*2.5:0;
+  ctx.strokeStyle=C.ink;ctx.lineWidth=3;
+  // trousers + shoes
+  ctx.fillStyle=C.pants;rr(-21,-50,16,46,4);ctx.fill();ctx.stroke();rr(5,-50,16,46,4);ctx.fill();ctx.stroke();
+  ctx.fillStyle=C.ink;ell(-14,-4,13,6);ctx.fill();ell(14,-4,13,6);ctx.fill();
+  // white coat
+  ctx.fillStyle=C.coat;ctx.beginPath();
+  ctx.moveTo(-30,-156);ctx.quadraticCurveTo(-47,-154,-44,-120);ctx.lineTo(-49,-40);
+  ctx.quadraticCurveTo(0,-34,49,-40);ctx.lineTo(44,-120);ctx.quadraticCurveTo(47,-154,30,-156);ctx.closePath();
+  ctx.fill();ctx.stroke();
+  ctx.fillStyle=C.coatShade;ctx.beginPath();ctx.moveTo(-44,-120);ctx.lineTo(-49,-40);ctx.lineTo(-38,-39);ctx.lineTo(-35,-118);ctx.closePath();ctx.fill();
+  if(!front){
+    ctx.strokeStyle=C.ink;ctx.lineWidth=3;line(0,-72,0,-40);
+    ctx.fillStyle=C.coatShade;rr(-26,-106,52,9,3);ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.ink;circ(-20,-101.5,2.4);ctx.fill();circ(20,-101.5,2.4);ctx.fill();
+    // typing arms
+    arm([[-40,-146],[-56,-118+bob],[-38,-128+bob]],C.coat,C.docSkin,14);
+    arm([[40,-146],[56,-118-bob],[38,-128-bob]],C.coat,C.docSkin,14);
+  }else{
+    // scrubs between the open coat
+    ctx.fillStyle=C.scrub;ctx.beginPath();ctx.moveTo(-13,-154);ctx.lineTo(13,-154);ctx.lineTo(7,-42);ctx.lineTo(-7,-42);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.lineWidth=2.5;line(-8,-154,0,-140);line(8,-154,0,-140);
+    line(-13,-154,-4,-122);line(13,-154,4,-122);
+    // pockets, pens, name badge
+    rr(-40,-86,18,16,3);ctx.stroke();rr(22,-86,18,16,3);ctx.stroke();
+    rr(18,-134,17,14,2);ctx.stroke();
+    ctx.strokeStyle='#3a6bd0';ctx.lineWidth=3;line(22,-140,22,-132);ctx.strokeStyle=C.pop||'#f0544a';line(28,-142,28,-132);
+    ctx.strokeStyle=C.ink;ctx.lineWidth=2;ctx.fillStyle='#fff';rr(-38,-136,22,11,2);ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.scrub;ctx.fillRect(-36,-134,6,7);
+    // stethoscope around the neck
+    ctx.strokeStyle=C.steth;ctx.lineWidth=3.5;
+    ctx.beginPath();ctx.moveTo(-12,-158);ctx.quadraticCurveTo(-22,-132,-14,-112);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(12,-158);ctx.quadraticCurveTo(20,-130,16,-116);ctx.stroke();
+    ctx.fillStyle='#c9d2da';ctx.strokeStyle=C.ink;ctx.lineWidth=2;circ(16,-111,5.5);ctx.fill();ctx.stroke();
+    if(mom.angry>0){
+      arm([[-40,-146],[-64,-116],[-42,-100]],C.coat,C.docSkin,14);
+      arm([[40,-146],[64,-172],[66,-204]],C.coat,C.docSkin,14);
+      // raised dermatoscope
+      ctx.strokeStyle=C.ink;ctx.lineWidth=7;line(66,-206,72,-228);
+      ctx.strokeStyle=C.monitor;ctx.lineWidth=4;line(66,-206,72,-228);
+      ctx.fillStyle='rgba(198,230,243,.9)';ctx.strokeStyle=C.ink;ctx.lineWidth=4;circ(76,-246,17);ctx.fill();ctx.stroke();
+      ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(76,-246,10,Math.PI*1.1,Math.PI*1.5);ctx.stroke();
+    }else{
+      arm([[-40,-146],[-49,-114],[-49,-84]],C.coat,C.docSkin,14);
+      arm([[40,-146],[49,-114],[49,-84]],C.coat,C.docSkin,14);
+    }
+  }
+  // neck + bob-cut head
+  ctx.fillStyle=C.docSkin;ctx.strokeStyle=C.ink;ctx.lineWidth=3;rr(-8,-170,16,18,4);ctx.fill();ctx.stroke();
+  const hy=-192;
+  ctx.fillStyle=C.docHair;
+  if(!front){
+    ctx.beginPath();ctx.moveTo(-31,hy+20);ctx.lineTo(-31,hy-2);ctx.arc(0,hy-2,31,Math.PI,0);ctx.lineTo(31,hy+20);
+    ctx.quadraticCurveTo(0,hy+28,-31,hy+20);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.strokeStyle=C.docHairHi;ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.arc(-6,hy-6,18,Math.PI*1.15,Math.PI*1.55);ctx.stroke();
+    line(-10,hy+4,-12,hy+18);line(4,hy+4,4,hy+20);line(16,hy+2,18,hy+18);
+  }else{
+    rr(-31,hy-31,62,54,22);ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.docSkin;ell(0,hy+5,23,25);ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.docHair;ctx.beginPath();ctx.moveTo(-26,hy-2);ctx.quadraticCurveTo(-24,hy-30,4,hy-26);
+    ctx.quadraticCurveTo(26,hy-24,26,hy-4);ctx.quadraticCurveTo(6,hy-14,-26,hy-2);ctx.closePath();ctx.fill();ctx.stroke();
+    // glasses
+    ctx.fillStyle='rgba(255,255,255,.4)';ctx.lineWidth=2.5;
+    circ(-10,hy+5,8);ctx.fill();ctx.stroke();circ(10,hy+5,8);ctx.fill();ctx.stroke();line(-2,hy+4,2,hy+4);
+    ctx.fillStyle=C.ink;
+    if(mom.angry>0){
+      circ(-10,hy+6,2.6);ctx.fill();circ(10,hy+6,2.6);ctx.fill();
+      ctx.lineWidth=3.5;line(-20,hy-9,-5,hy-3);line(20,hy-9,5,hy-3);
+      ctx.fillStyle='#8a2f3a';ctx.lineWidth=2.5;ell(0,hy+20,7,6);ctx.fill();ctx.stroke();
+    }else{
+      const ox=Math.sin(G.clock*3)*3.5;
+      circ(-10+ox,hy+6,2.3);ctx.fill();circ(10+ox,hy+6,2.3);ctx.fill();
+      ctx.lineWidth=3;line(-18,hy-6,-4,hy-6);line(18,hy-6,4,hy-6);
+      ctx.lineWidth=2.5;line(-6,hy+19,6,hy+19);
+    }
+  }
+  ctx.restore();
+  // speech marks
+  if(mom.warn>0){
+    ctx.fillStyle='#f4b63f';ctx.strokeStyle=C.ink;ctx.lineWidth=3;circ(44,-238,17);ctx.fill();ctx.stroke();
+    bubbleText('！',44,-237,22,C.ink,'#f4b63f');
+  }
+  if(mom.angry>0){
+    ctx.fillStyle=C.paper;ctx.strokeStyle=C.ink;ctx.lineWidth=3;
+    rr(-186,-262,152,38,14);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-50,-226);ctx.lineTo(-34,-212);ctx.lineTo(-64,-225);ctx.fill();
+    bubbleText(mom.say||'不是叫你別擠嗎！',-110,-243,16,C.ink,C.paper);
+  }
+  ctx.restore();
+}
+
+/* ---------- pimples, fingers, effects ---------- */
+function pimpleRadius(p){const g=p.born?Math.min(1,(G.clock-p.born)/.3):1;return p.r*1.2*face.k*(1+.35*p.q)*p.swell*(.25+.75*g);}
+function drawPimple(p){
+  const T=TYPES[p.type], held=G.held===p;
+  const x=fx(p.u)+(held&&!reduceMotion?Math.sin(G.clock*55)*p.q*1.4:0), y=fy(p.v), r=pimpleRadius(p);
+  if(p.type!=='black'){
+    const hr=r*(p.type==='white'?1.7:2.3), a=p.type==='white'?.22:p.type==='pus'?.42:.5;
+    const g=ctx.createRadialGradient(x,y,r*.3,x,y,hr);
+    g.addColorStop(0,'rgba(227,85,94,'+a+')');g.addColorStop(1,'rgba(227,85,94,0)');
+    ctx.fillStyle=g;circ(x,y,hr);ctx.fill();
+  }
+  ctx.fillStyle=p.type==='white'?'#f2b9a2':p.type==='pus'?'#ec877d':p.type==='black'?C.skinShade:(p.swell>1?C.redDeep:C.red);
+  ctx.strokeStyle='rgba(42,40,56,.45)';ctx.lineWidth=1.4*face.k;
+  circ(x,y,r);ctx.fill();ctx.stroke();
+  if(p.type==='white'){ctx.fillStyle=C.whiteHead;circ(x,y+r*.05,r*.42*(1+.5*p.q));ctx.fill();}
+  else if(p.type==='pus'){
+    const hr=r*.5*(1+.6*p.q);
+    ctx.fillStyle=C.pus;circ(x,y,hr);ctx.fill();
+    ctx.fillStyle=C.pusShade;ell(x,y+hr*.35,hr*.75,hr*.4);ctx.fill();
+  }else if(p.type==='black'){ctx.fillStyle=C.blackHead;circ(x,y,r*.45*(1+.3*p.q));ctx.fill();}
+  ctx.fillStyle='rgba(255,255,255,'+(p.type==='red'?.7:.5)+')';
+  ell(x-r*.36,y-r*.38,r*(p.type==='red'?.3:.24),r*.16);ctx.fill();
+  if(held){
+    ctx.strokeStyle=T.trap?C.redDeep:C.ink;ctx.lineWidth=3*face.k;ctx.lineCap='round';
+    ctx.beginPath();ctx.arc(x,y,r+9*face.k,-Math.PI/2,-Math.PI/2+TAU*p.q);ctx.stroke();
+  }
+}
+function drawFingers(p){
+  const x=fx(p.u), y=fy(p.v), r=pimpleRadius(p), k=face.k;
+  const gap=r*(2.3-1.15*p.q)+5*k, w=24*k, L=96*k;
+  for(const side of [-1,1]){
+    ctx.save();ctx.translate(x+side*gap,y+r*.2);ctx.rotate(Math.atan2(.75,side));
+    ctx.fillStyle=C.finger;ctx.strokeStyle=C.ink;ctx.lineWidth=3*k;
+    rr(0,-w/2,L,w,w/2);ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.nail;ell(w*.6,side>0?-w*.06:w*.06,w*.38,w*.3);ctx.fill();ctx.lineWidth=2*k;ctx.stroke();
+    ctx.lineWidth=2*k;ctx.beginPath();ctx.arc(L*.52,0,w*.28,-.9,.9);ctx.stroke();
+    ctx.restore();
+  }
+}
+function drawFx(){
+  for(const q of G.parts){
+    const a=clamp(q.life/q.max,0,1);ctx.globalAlpha=a;
+    ctx.fillStyle=q.color;ctx.strokeStyle='rgba(42,40,56,.6)';ctx.lineWidth=1.2;
+    if(q.kind==='plug'){ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.rot);rr(-q.r*1.6,-q.r*.6,q.r*3.2,q.r*1.2,q.r*.6);ctx.fill();ctx.stroke();ctx.restore();}
+    else{circ(q.x,q.y,q.r);ctx.fill();ctx.stroke();}
+  }
+  ctx.globalAlpha=1;
+  for(const t of G.texts){
+    const a=clamp(t.life/t.max,0,1);ctx.globalAlpha=a;
+    bubbleText(t.txt,t.x,t.y,t.size,t.color,C.ink);
+  }
+  ctx.globalAlpha=1;
+}
+
+/* ---------- the player's face ---------- */
+function drawPlayer(){
+  const k=face.k, X=face.x, Y=face.y, rx=face.rx, ry=face.ry, e=G.expr;
+  ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=C.ink;ctx.lineWidth=3.5*k;
+  // shoulders in a school shirt
+  ctx.fillStyle='#eef2f7';ctx.beginPath();
+  ctx.moveTo(X-rx*1.9,H+10);ctx.quadraticCurveTo(X-rx*1.75,Y+ry*.74,X-rx*.4,Y+ry*.74);
+  ctx.lineTo(X+rx*.4,Y+ry*.74);ctx.quadraticCurveTo(X+rx*1.75,Y+ry*.74,X+rx*1.9,H+10);ctx.closePath();ctx.fill();ctx.stroke();
+  // hair behind
+  ctx.fillStyle=C.hair;ell(X,Y-ry*.1,rx*1.1,ry*1.02);ctx.fill();ctx.stroke();
+  // ears
+  ctx.fillStyle=C.skin;
+  for(const sd of [-1,1]){circ(X+sd*rx*.98,Y+ry*.03,rx*.17);ctx.fill();ctx.stroke();
+    ctx.lineWidth=2.2*k;ctx.beginPath();ctx.arc(X+sd*rx*.99,Y+ry*.03,rx*.08,sd>0?-1.4:1.74,sd>0?1.4:4.54);ctx.stroke();ctx.lineWidth=3.5*k;}
+  // face
+  ctx.fillStyle=C.skin;ell(X,Y,rx,ry);ctx.fill();
+  ctx.save();ell(X,Y,rx,ry);ctx.clip();
+  ctx.fillStyle='rgba(233,181,151,.5)';ell(X,Y+ry*1.02,rx*1.15,ry*.38);ctx.fill();
+  ctx.restore();
+  ell(X,Y,rx,ry);ctx.stroke();
+  ctx.fillStyle=C.blush;ell(X-rx*.56,Y+ry*.24,rx*.17,ry*.08);ctx.fill();ell(X+rx*.56,Y+ry*.24,rx*.17,ry*.08);ctx.fill();
+  // post-pop red marks, then pimples
+  for(const m of G.marks){ctx.fillStyle='rgba(214,92,96,'+(.34*m.life/m.max)+')';circ(fx(m.u),fy(m.v),m.r*k);ctx.fill();}
+  for(const sc of G.scars)drawScar(sc);
+  for(const p of G.pimples) drawPimple(p);
+  // bowl-cut fringe
+  ctx.fillStyle=C.hair;ctx.beginPath();
+  ctx.moveTo(X-rx*1.07,Y-ry*.02);
+  ctx.bezierCurveTo(X-rx*1.14,Y-ry*1.16,X+rx*1.14,Y-ry*1.16,X+rx*1.07,Y-ry*.02);
+  ctx.lineTo(X+rx*.93,Y-ry*.4);
+  for(let i=0;i<=8;i++){const t=i/8;ctx.lineTo(X+rx*(.84-1.68*t),Y-ry*(i%2?.5:.62));}
+  ctx.lineTo(X-rx*.93,Y-ry*.4);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle=C.hairHi;ctx.lineWidth=3*k;ctx.beginPath();ctx.arc(X-rx*.3,Y-ry*.66,rx*.24,Math.PI*1.15,Math.PI*1.6);ctx.stroke();
+  ctx.strokeStyle=C.ink;
+  // brows
+  const ex=rx*.36, ey=Y-ry*.06, er=rx*.075, by=Y-ry*.27;
+  ctx.lineWidth=4.2*k;
+  for(const sd of [-1,1]){
+    const ix=X+sd*ex*.55, ox=X+sd*ex*1.45;
+    let iy=by, oy=by;
+    if(e==='squeeze'){iy+=ry*.05;oy-=ry*.02;}
+    else if(e==='worry'||e==='innocent'){iy-=ry*.05;oy+=ry*.02;}
+    else if(e==='caught'){iy-=ry*.08;oy-=ry*.08;}
+    line(ix,iy,ox,oy);
+  }
+  // eyes
+  ctx.fillStyle=C.ink;ctx.lineWidth=4*k;
+  for(const sd of [-1,1]){
+    const cx=X+sd*ex;
+    if(e==='squeeze'){ctx.beginPath();ctx.moveTo(cx-sd*er*1.3,ey-er*1.1);ctx.lineTo(cx+sd*er*1.1,ey);ctx.lineTo(cx-sd*er*1.3,ey+er*1.1);ctx.stroke();}
+    else if(e==='happy'){ctx.beginPath();ctx.arc(cx,ey+er*.6,er*1.4,Math.PI*1.12,Math.PI*1.88);ctx.stroke();}
+    else if(e==='caught'){ctx.fillStyle='#fff';ctx.lineWidth=3*k;circ(cx,ey,er*2);ctx.fill();ctx.stroke();ctx.fillStyle=C.ink;circ(cx,ey,er*.65);ctx.fill();}
+    else{
+      const lookY=e==='innocent'||e==='worry'?-er*.9:-er*.3, lookX=e==='innocent'?er*.6:0;
+      circ(cx+lookX,ey+lookY,er);ctx.fill();
+      ctx.fillStyle='#fff';circ(cx+lookX-er*.35,ey+lookY-er*.35,er*.33);ctx.fill();ctx.fillStyle=C.ink;
+      if(e==='innocent'){ctx.lineWidth=3*k;line(cx-er*1.5,ey-er*.1,cx+er*1.5,ey-er*.1);}
+    }
+  }
+  // nose
+  ctx.lineWidth=3*k;ctx.beginPath();ctx.arc(X,Y+ry*.18,rx*.06,.2,Math.PI-.2);ctx.stroke();
+  // mouth
+  const my=Y+ry*.5;
+  if(e==='squeeze'){
+    ctx.fillStyle='#fff';rr(X-rx*.19,my-ry*.05,rx*.38,ry*.1,4*k);ctx.fill();ctx.stroke();
+    ctx.lineWidth=2*k;line(X-rx*.19,my,X+rx*.19,my);for(let i=-2;i<=2;i++)line(X+i*rx*.07,my-ry*.05,X+i*rx*.07,my+ry*.05);
+  }else if(e==='caught'){
+    ctx.fillStyle='#7a2a35';ell(X,my+ry*.03,rx*.15,ry*.12);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#e97a84';ell(X,my+ry*.1,rx*.08,ry*.04);ctx.fill();
+  }else if(e==='happy'){
+    ctx.fillStyle='#7a2a35';ctx.beginPath();ctx.moveTo(X-rx*.18,my-ry*.03);ctx.quadraticCurveTo(X,my+ry*.2,X+rx*.18,my-ry*.03);ctx.closePath();ctx.fill();ctx.stroke();
+  }else if(e==='innocent'){
+    ctx.lineWidth=3*k;circ(X+rx*.05,my,rx*.05);ctx.stroke();
+    const n=(G.clock*1.3)%1;ctx.globalAlpha=1-n;bubbleText('♪',X+rx*(.3+n*.25),my-ry*(.05+n*.25),22*k,C.paper,C.ink);ctx.globalAlpha=1;
+  }else if(e==='worry'){
+    ctx.lineWidth=3*k;ctx.beginPath();for(let i=0;i<=6;i++){ctx.lineTo(X-rx*.15+i*rx*.05,my+(i%2?-1:1)*ry*.015);}ctx.stroke();
+  }else{
+    ctx.lineWidth=3*k;ctx.beginPath();ctx.arc(X,my-ry*.06,rx*.12,.5,Math.PI-.5);ctx.stroke();
+  }
+  // sweat
+  if(e==='caught'||e==='worry'){
+    const sx=X+rx*.78, sy=Y-ry*.32;
+    ctx.fillStyle='#bfe6ff';ctx.lineWidth=2.5*k;ctx.beginPath();
+    ctx.moveTo(sx,sy-rx*.12);ctx.quadraticCurveTo(sx+rx*.08,sy,sx,sy+rx*.05);ctx.quadraticCurveTo(sx-rx*.08,sy,sx,sy-rx*.12);ctx.fill();ctx.stroke();
+  }
+  if(G.held) drawFingers(G.held);
+}
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  if(G.shake>0&&!reduceMotion) ctx.translate(rand(-1,1)*G.shake*9,rand(-1,1)*G.shake*6);
+  drawMom();
+  nurses.forEach(drawNurse);
+  drawPlayer();
+  drawFx();
+  ctx.restore();
+  if(mom.look>.5||nurseIs('cross')||nurseIs('point')){
+    const a=mom.angry>0?.16:.07;
+    const g=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.3,W/2,H/2,Math.max(W,H)*.75);
+    g.addColorStop(0,'rgba(240,84,74,0)');g.addColorStop(1,'rgba(240,84,74,'+a+')');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  }
+}
+
+/* ---------- HUD helpers ---------- */
+const sylEls=[...document.querySelectorAll('#syls span')];
+const statusEl=$('#status');
+const STATUS={menu:['醫師在打病歷',''],back:['背對中・快擠',''],warn:['要回頭了！','look'],tease:['嗯…？','warn'],look:['她在看！別動','look'],caught:['被抓包了','look'],
+  steps:['有腳步聲！','warn'],steps2:['兩個腳步聲！','warn'],nurse:['護理師在看！','look'],nurseCaught:['被護理師抓包','look'],full:['不開心爆表','look']};
+let statusNow='';
+function setStatus(k){if(k===statusNow)return;statusNow=k;const s=STATUS[k];statusEl.textContent=s[0];statusEl.className='status'+(s[1]?' '+s[1]:'');}
+function setSyls(n){sylEls.forEach((el,i)=>{el.classList.toggle('lit',i<=n&&i<13);el.classList.toggle('hit',i<=n&&i===13);});}
+function addScore(n){
+  const before=rankOf(G.score);
+  G.score=Math.max(0,G.score+n);$('#score').textContent=G.score;
+  const r=rankOf(G.score);
+  if(r!==before){setRank(r,r>before);if(r>before&&playing()){G.texts.push({x:face.x,y:face.y-face.ry*.5,txt:'升級！'+RANKS[r],life:1.6,max:1.6,size:Math.round(20*face.k+6),color:'#ffe08a',vy:-28});sfx.level();}}
+}
+function updateBest(){$('#bestStart').textContent=best>0?'最佳紀錄 '+best+' 分':'';$('#bestHud').textContent=best;}
+let toastTimer=0;
+function toast(txt,bad){
+  const el=$('#toast');el.textContent=txt;el.classList.toggle('bad',!!bad);
+  el.hidden=true;void el.offsetWidth;el.hidden=false;
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true;},1150);
+}
+const playing=()=>G.mode==='play';
+
+/* ---------- pimples ---------- */
+const AVOID=[[-.36,-.06,.22],[.36,-.06,.22],[0,.5,.27],[0,.18,.11]];
+const MAX_PIMPLES=20;
+function realCount(){return G.pimples.filter(p=>!TYPES[p.type].trap).length;}
+let moodPrev=0;
+function updateCount(){
+  const n=realCount(),r=clamp(n/MAX_PIMPLES,0,1),el=$('#mood'),fill=$('#moodFill');
+  fill.style.height=(r*100)+'%';
+  fill.style.backgroundColor='hsl('+Math.round(130-130*r)+' 70% 52%)';
+  el.dataset.mood=r<.3?'happy':r<.55?'meh':r<.8?'sad':'angry';
+  el.classList.toggle('danger',r>=.8);el.setAttribute('aria-valuenow',String(n));
+  if(n>moodPrev){const f=$('#moodFace');f.classList.remove('bump');void f.getBoundingClientRect();f.classList.add('bump');}
+  moodPrev=n;
+}
+function findSpot(){
+  for(const gap of [.2,.16,.12,.08]){
+    for(let tries=0;tries<200;tries++){
+      const u=rand(-.82,.82),v=rand(-.38,.82);
+      if((u*u)/(.86*.86)+(v*v)/(.9*.9)>1)continue;
+      if(AVOID.every(a=>Math.hypot(u-a[0],(v-a[1])*1.1)>a[2])&&G.pimples.every(p=>Math.hypot(u-p.u,v-p.v)>gap))return [u,v];
+    }
+  }
+  return [rand(-.6,.6),rand(-.2,.8)];
+}
+function randomType(){const r=Math.random();return r<.45?'white':r<.75?'pus':'black';}
+function addPimple(type,sprout){
+  const [u,v]=findSpot(),T=TYPES[type];
+  const p={type,u,v,r:rand(T.r[0],T.r[1]),q:0,swell:1,born:sprout?G.clock:0,ttl:T.trap?3+Math.floor(Math.random()*2):0};
+  G.pimples.push(p);return p;
+}
+function spawnStart(){
+  G.pimples=[];
+  for(let i=0;i<8;i++)addPimple(randomType(),false);
+  updateCount();
+}
+// after every chant 1-2 new pimples sprout; between chants the face never drops below MIN_PIMPLES
+const MIN_PIMPLES=5;
+function sproutOne(){
+  const np=addPimple(randomType(),true);
+  G.texts.push({x:fx(np.u),y:fy(np.v)-16*face.k,txt:'冒出來了',life:.8,max:.8,size:Math.round(12*face.k+6),color:'#ffe0d6',vy:-24});
+}
+function growPimples(){
+  const n=1+(Math.random()<Math.min(.8,.35+.03*G.phrases)?1:0);
+  for(let i=0;i<n;i++)sproutOne();
+  sfx.sprout();updateCount();
+  if(realCount()>=MAX_PIMPLES)fullFace();
+}
+function refill(dt){
+  if(realCount()>=MIN_PIMPLES){G.refillT=Math.min(G.refillT||0,.25);return;}
+  G.refillT=(G.refillT||0)-dt;
+  if(G.refillT<=0){G.refillT=.45;sproutOne();sfx.sprout();updateCount();}
+}
+function fullFace(){
+  if(G.mode!=='play')return;
+  mom.caughtThis=true;mom.angry=99;mom.say='整臉都是痘痘了！';G.held=null;G.caughtBy='full';G.lostAt=G.clock;
+  G.shake=.8;G.expr='worry';G.exprT=99;
+  musicPause();musicDuck(false);sfx.caught();toast('不開心爆表！',true);
+  G.mode='ending';G.endAt=G.clock+1.8;
+}
+function faceCleared(){addScore(30);sfx.clear();toast('整臉清空 +30');}
+function pick(x,y){
+  let hit=null,bd=1e9;
+  for(const p of G.pimples){
+    const d=Math.hypot(x-fx(p.u),y-fy(p.v)), reach=pimpleRadius(p)*1.6+16;
+    if(d<reach&&d<bd){bd=d;hit=p;}
+  }
+  return hit;
+}
+function popPimple(p){
+  const x=fx(p.u),y=fy(p.v),T=TYPES[p.type],k=face.k;
+  G.pimples.splice(G.pimples.indexOf(p),1);G.held=null;
+  G.marks.push({u:p.u,v:p.v,r:p.r*1.3,life:7,max:7});
+  const scarP=Math.min(.85,.08+G.score/1500)*(p.type==='pus'?1.4:p.type==='black'?.5:1);
+  if(Math.random()<scarP&&G.scars.length<70){
+    G.scars.push({u:p.u,v:p.v,r:p.r*rand(.7,1.05),kind:['ice','box','roll'][Math.floor(Math.random()*3)],rot:rand(0,Math.PI)});
+    G.texts.push({x:x+20*k,y:y+8*k,txt:'留疤',life:.9,max:.9,size:Math.round(12*k+6),color:'#f3c2b6',vy:-20});
+  }
+  const n=p.type==='pus'?16:p.type==='white'?10:4;
+  for(let i=0;i<n;i++){
+    const a=-Math.PI/2+rand(-1.1,1.1),sp=rand(140,330)*k;
+    G.parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:rand(2,4.5)*k,life:rand(.5,.9),max:.9,color:p.type==='pus'?C.pus:C.whiteHead,kind:'drop'});
+  }
+  if(p.type==='black')G.parts.push({x,y,vx:rand(-30,30)*k,vy:-260*k,r:3.2*k,life:1,max:1,color:C.blackHead,kind:'plug',rot:-1.2,vr:rand(-6,6)});
+  addScore(T.pts);
+  G.texts.push({x,y:y-16*k,txt:(p.type==='pus'?'啵！':'')+'+'+T.pts,life:.9,max:.9,size:Math.round(20*k+6),color:C.paper,vy:-60});
+  sfx.pop(p.type==='pus');G.expr='happy';G.exprT=.35;
+  updateCount();
+  if(!G.pimples.some(o=>!TYPES[o.type].trap))faceCleared();
+}
+function updatePimples(dt){
+  const p=G.held;
+  if(!p)return;
+  const T=TYPES[p.type],prev=p.q;
+  p.q+=dt/T.hold;
+  if(Math.floor(prev*4)!==Math.floor(p.q*4)&&p.q<1)sfx.tick();
+  if(p.q>=1)popPimple(p);
+}
+
+/* ---------- doctor: 被我抓到你在擠痘痘你就完蛋了 ---------- */
+G.scars=[];G.caughtBy=null;
+sfx.level=()=>{[659,784,988,1319].forEach((f,i)=>setTimeout(()=>tone(f,.12,'triangle',.12),i*70));};
+// badge tiers, five ranks each: bronze, silver, gold, jade, amethyst, moon
+const TIERS=[
+  {b1:'#e7a873',b2:'#a8693a',rb:'#7aa6d8',cr:0},
+  {b1:'#e3e8ee',b2:'#8d99a6',rb:'#e57373',cr:0},
+  {b1:'#ffd45e',b2:'#c8901a',rb:'#e2555e',cr:0},
+  {b1:'#93dcc4',b2:'#2f9a7c',rb:'#7f68b0',cr:0},
+  {b1:'#c9a8f2',b2:'#7a4dc2',rb:'#f0b83f',cr:0},
+  {b1:'#f1eee2',b2:'#8a8676',rb:'#2a2838',cr:1}
+];
+function paintBadge(svg,r){
+  const t=TIERS[Math.min(TIERS.length-1,Math.floor(r/5))];
+  svg.style.setProperty('--b1',t.b1);svg.style.setProperty('--b2',t.b2);svg.style.setProperty('--rb',t.rb);svg.style.setProperty('--cr',String(t.cr));
+  svg.querySelector('.lv').textContent=r+1;
+}
+function setRank(r,animate){
+  $('#rankName').textContent=RANKS[r];paintBadge($('#rankBadge'),r);
+  const el=$('#rank');el.classList.remove('up');if(animate){void el.offsetWidth;el.classList.add('up');}
+}
+function drawScar(s){
+  const r=s.r*1.15*face.k;
+  ctx.save();ctx.translate(fx(s.u),fy(s.v));ctx.rotate(s.rot);
+  if(s.kind==='ice'){            // ice-pick: narrow and deep
+    ctx.fillStyle='rgba(150,86,70,.55)';ell(0,0,r*.32,r*.42);ctx.fill();
+    ctx.fillStyle='rgba(255,240,228,.65)';ell(r*.08,r*.2,r*.18,r*.08);ctx.fill();
+  }else if(s.kind==='box'){      // boxcar: flat floor, sharp walls
+    ctx.fillStyle='rgba(208,142,116,.5)';rr(-r*.6,-r*.48,r*1.2,r*.96,r*.22);ctx.fill();
+    ctx.strokeStyle='rgba(140,80,64,.55)';ctx.lineWidth=1.5*face.k;
+    ctx.beginPath();ctx.moveTo(-r*.6,r*.4);ctx.lineTo(-r*.6,-r*.48);ctx.lineTo(r*.55,-r*.48);ctx.stroke();
+  }else if(s.kind==='crater'){   // moon surface: deep bowl with a lit rim
+    ctx.fillStyle='rgba(176,104,84,.5)';circ(0,0,r);ctx.fill();
+    ctx.fillStyle='rgba(120,64,52,.35)';ell(-r*.15,-r*.15,r*.75,r*.7);ctx.fill();
+    ctx.strokeStyle='rgba(255,236,222,.75)';ctx.lineWidth=1.6*face.k;ctx.beginPath();ctx.arc(0,0,r,.1,Math.PI*.9);ctx.stroke();
+  }else{                         // rolling: wide, shallow dip
+    const g=ctx.createRadialGradient(-r*.2,-r*.2,0,0,0,r*1.1);
+    g.addColorStop(0,'rgba(190,118,96,.42)');g.addColorStop(1,'rgba(190,118,96,0)');
+    ctx.fillStyle=g;circ(0,0,r*1.1);ctx.fill();
+  }
+  ctx.restore();
+}
+function startChant(){
+  mom.state='back';mom.t=0;mom.syl=-1;mom.warn=0;mom.look=0;mom.caughtThis=false;mom.angry=0;mom.teaseT=0;mom.lastAb=-1;mom.say=null;
+  const lvl=Math.floor(G.phrases/4);mom.speed=pickSpeed(mom.speed);
+  mom.tune=tuneFor();
+  mom.st=60/(baseBpm()*mom.speed)/2;
+  mom.start=nowS()+.12;mom.end=mom.start+(LEAD+STEPS)*mom.st;
+  // fake-outs: half-turns mid-phrase. The music keeps going, so the rhythm is the honest signal.
+  mom.teases=[];
+  const n=(Math.random()<Math.min(.85,.5+.08*lvl)?1:0)+(Math.random()<Math.min(.55,.12*lvl)?1:0);
+  const maxStep=Math.max(4,Math.floor(LEAD+14-.62/mom.st));
+  for(let k=0;k<n;k++){
+    for(let tries=0;tries<20;tries++){
+      const st=2+Math.floor(Math.random()*(maxStep-1));
+      if(mom.teases.every(o=>Math.abs(o-st)*mom.st>.75)){mom.teases.push(st);break;}
+    }
+  }
+  mom.teases.sort((a,b)=>a-b);
+  // the nurse starts walking past after a few chants
+  if(playing()&&G.phrases>=1&&nursesIdle()&&(G.phrases===1||Math.random()<Math.min(.65,.45+.03*(G.phrases-1))))
+    scheduleNurses(mom.start,mom.end-mom.start);
+  setSyls(-1);
+  if(playing())musicPhrase(mom.start,mom.st,mom.tune);
+}
+function beginTurn(){
+  mom.state='turning';mom.t=0;mom.teaseT=0;mom.warn=0;
+  if(playing()){musicPause();sfx.turn();G.phrases++;growPimples();}
+}
+function caught(by){
+  if(mom.caughtThis||G.mode!=='play')return;
+  mom.caughtThis=true;mom.angry=99;mom.say='不是叫你別擠嗎！';G.held=null;G.caughtBy=by||'doctor';G.lostAt=G.clock;
+  if(by==='nurse'){const cn=nurses.filter(n=>n.state==='cross').sort((p,q)=>Math.abs(p.x-W/2)-Math.abs(q.x-W/2));if(cn[0])cn[0].state='point';if(mom.state==='back'){mom.state='turning';mom.t=0;mom.teaseT=0;mom.warn=0;}}
+  G.shake=1;G.expr='caught';G.exprT=99;
+  musicPause();musicDuck(false);sfx.caught();toast(by==='nurse'?'被護理師看到了！':'被看到了！',true);
+  G.mode='ending';G.endAt=G.clock+(by==='nurse'?2:1.5);
+}
+function updateMom(dt){
+  mom.t+=dt;
+  if(mom.angry>0&&mom.angry<99)mom.angry=Math.max(0,mom.angry-dt);
+  if(mom.state==='back'){
+    mom.stir+=dt*5;
+    const now=nowS(),ab=(now-mom.start)/mom.st,rel=ab-LEAD,abi=Math.floor(ab);
+    let syl=-1;
+    for(let i=0;i<14;i++)if(rel>=SYL_STEP[i])syl=i;
+    if(syl!==mom.syl){mom.syl=syl;setSyls(syl);}
+    if(mom.teaseT>0){
+      const T=now-mom.teaseStart;mom.teaseT=T+1e-4;
+      mom.look=T<.12?.42*T/.12:T<.4?.42:T<.56?.42*(1-(T-.4)/.16):0;
+      if(T>=.56){mom.teaseT=0;mom.look=0;}
+    }else if(mom.teases.length&&ab>=mom.teases[0]){
+      mom.teases.shift();mom.teaseStart=now;mom.teaseT=1e-4;
+      if(playing())sfx.tease();
+    }
+    if(rel>=14&&!mom.warn)mom.warn=1;
+    if(now>=mom.end)beginTurn();
+  }else if(mom.state==='turning'){
+    mom.look=Math.min(1,mom.look+dt/.15);
+    if(mom.look>=1){
+      mom.state='facing';mom.t=0;mom.faceDur=rand(.6,1.1)+(G.phrases>=12?rand(0,.4):0);
+      if(playing()&&G.held)caught();
+    }
+  }else if(mom.state==='facing'){
+    if(G.mode!=='ending'&&mom.t>=mom.faceDur&&mom.angry<=0)mom.state='turnBack';
+  }else if(mom.state==='turnBack'){
+    mom.look=Math.max(0,mom.look-dt/.18);
+    if(mom.look<=0)startChant();
+  }
+}
+
+/* ---------- nurses: footsteps first, then they walk past the door. Later on, sometimes two come. ---------- */
+const NURSE_LOOKS=[
+  {top:'#f6b3c6',pants:'#e48aa7',band:'#e48aa7',hair:'bun'},
+  {top:'#a9d4f2',pants:'#6fa9d6',band:'#6fa9d6',hair:'pony'}
+];
+const nurses=NURSE_LOOKS.map((look,i)=>({i,look,state:'off',t:0,dir:1,forceDir:0,x:-999,stepT:0,nextAt:Infinity,phase:0,dur:1.6}));
+const nurseIs=st=>nurses.some(n=>n.state===st);
+const nursesIdle=()=>nurses.every(n=>n.state==='off'&&n.nextAt===Infinity);
+const nurseCount=()=>nurses.filter(n=>n.state!=='off'||n.nextAt!==Infinity).length;
+function resetNurses(){for(const n of nurses){n.state='off';n.nextAt=Infinity;n.x=-999;n.forceDir=0;}}
+function scheduleNurses(start,len){
+  const a=nurses[0],b=nurses[1];
+  a.nextAt=start+rand(.3,len*.6);a.forceDir=0;b.forceDir=0;
+  if(G.phrases>=8&&Math.random()<Math.min(.5,.2+.03*(G.phrases-8))){
+    a.forceDir=Math.random()<.5?1:-1;
+    if(Math.random()<.5){b.forceDir=a.forceDir;b.nextAt=a.nextAt+.55;}   // one right behind the other
+    else{b.forceDir=-a.forceDir;b.nextAt=a.nextAt+rand(.3,1.1);}         // one from each side
+  }
+}
+function footstep(pan,vol){
+  const a=AC;if(!a||muted||a.state!=='running')return;
+  const t=a.currentTime;let dest=a.destination;
+  if(a.createStereoPanner){const p=a.createStereoPanner();p.pan.value=pan;p.connect(a.destination);dest=p;}
+  const n=Math.floor(a.sampleRate*.06),b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
+  const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();
+  f.type='bandpass';f.frequency.value=1100;f.Q.value=1.5;g.gain.value=vol*1.8;
+  s.buffer=b;s.connect(f).connect(g).connect(dest);s.start(t);
+  const o=a.createOscillator(),og=a.createGain();
+  o.type='sine';o.frequency.setValueAtTime(170,t);o.frequency.exponentialRampToValueAtTime(60,t+.1);
+  og.gain.setValueAtTime(vol,t);og.gain.exponentialRampToValueAtTime(.0001,t+.14);
+  o.connect(og).connect(dest);o.start(t);o.stop(t+.16);
+}
+function updateOneNurse(n,dt){
+  if(n.state==='off'){
+    if(playing()&&nowS()>=n.nextAt){
+      n.state='steps';n.t=0;n.stepT=0;n.dir=n.forceDir||(Math.random()<.5?1:-1);n.nextAt=Infinity;
+      musicDuck(true);G.ducked=true;
+    }
+    return;
+  }
+  if(n.state==='point')return;
+  n.t+=dt;n.stepT-=dt;
+  if(n.state==='steps'){
+    if(n.stepT<=0){
+      n.stepT+=.3;
+      const k=Math.min(1,n.t/1.3), ex=n.dir>0?34:W-34;
+      footstep(n.dir>0?-.9:.9,.3+.3*k);
+      G.texts.push({x:ex,y:mom.y-rand(30,110)*mom.s,txt:'叩！',life:.6,max:.6,size:Math.round(20+8*k),color:C.paper,vy:-30});
+    }
+    if(n.t>=1.3){n.state='cross';n.t=0;n.phase=0;n.dur=Math.max(1.1,1.7-.04*Math.floor(G.phrases/4));}
+  }else if(n.state==='cross'){
+    const m=80*mom.s*1.12,p=n.t/n.dur;
+    n.x=n.dir>0?-m+(W+2*m)*p:W+m-(W+2*m)*p;
+    n.phase+=dt*11;
+    if(n.stepT<=0){n.stepT+=.3;footstep(clamp(n.x/W*2-1,-1,1),.6);}
+    if(p>=1){n.state='off';n.x=-999;}
+  }
+}
+function updateNurse(dt){
+  for(const n of nurses)updateOneNurse(n,dt);
+  if(G.ducked&&nurses.every(n=>n.state==='off')){musicDuck(false);G.ducked=false;}
+}
+function drawNurse(n){
+  if(n.state!=='cross'&&n.state!=='point')return;
+  const L=n.look, s=mom.s*1.12, walking=n.state==='cross';
+  const sw=walking?Math.sin(n.phase)*.45:0, bob=walking?-Math.abs(Math.sin(n.phase))*3:0;
+  ctx.save();ctx.translate(n.x,mom.y+36*mom.s+bob*s);ctx.scale(s,s);
+  ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=C.ink;ctx.lineWidth=3;
+  // legs + white shoes
+  for(const [sd,a] of [[-1,sw],[1,-sw]]){
+    ctx.save();ctx.translate(sd*9,-62);ctx.rotate(a);
+    ctx.fillStyle=L.pants;rr(-7,0,14,56,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#fff';ell(3*n.dir,58,11,6);ctx.fill();ctx.stroke();
+    ctx.restore();
+  }
+  // tunic
+  ctx.fillStyle=L.top;ctx.beginPath();
+  ctx.moveTo(-28,-152);ctx.quadraticCurveTo(-42,-150,-39,-118);ctx.lineTo(-40,-58);
+  ctx.quadraticCurveTo(0,-52,40,-58);ctx.lineTo(39,-118);ctx.quadraticCurveTo(42,-150,28,-152);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.lineWidth=2.5;line(-9,-152,0,-138);line(9,-152,0,-138);rr(10,-108,18,14,3);ctx.stroke();
+  // arms: one swings, one holds a clipboard (or points at you)
+  arm([[-36,-144],[-40-sw*18,-112],[-38-sw*28,-84]],L.top,C.docSkin,13);
+  if(n.state==='point'){
+    arm([[36,-144],[52,-118],[66,-96]],L.top,C.docSkin,13);
+  }else{
+    ctx.fillStyle='#c9a77c';ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;rr(2,-134,28,34,3);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#fff';rr(6,-128,20,24,2);ctx.fill();
+    ctx.lineWidth=1.5;for(let i=0;i<3;i++)line(9,-122+i*6,23,-122+i*6);
+    arm([[36,-144],[46,-118],[22,-112]],L.top,C.docSkin,13);
+  }
+  // head: bun or ponytail, plus headband
+  ctx.fillStyle=C.docSkin;ctx.strokeStyle=C.ink;ctx.lineWidth=3;rr(-7,-168,14,18,4);ctx.fill();ctx.stroke();
+  const hy=-190;
+  ctx.fillStyle=C.docHair;
+  if(L.hair==='bun'){circ(0,hy-27,11);ctx.fill();ctx.stroke();}
+  else{ctx.save();ctx.translate(-n.dir*24,hy+2);ctx.rotate(-n.dir*.35+(walking?Math.sin(n.phase)*.15:0));ell(0,8,9,17);ctx.fill();ctx.stroke();ctx.restore();}
+  ctx.fillStyle=C.docSkin;circ(0,hy,24);ctx.fill();ctx.stroke();
+  ctx.fillStyle=C.docHair;ell(0,hy-12,25,13);ctx.fill();ctx.stroke();
+  ctx.strokeStyle=L.band;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,hy-4,24,Math.PI*1.12,Math.PI*1.88);ctx.stroke();
+  ctx.fillStyle=C.ink;ctx.strokeStyle=C.ink;
+  if(n.state==='point'){
+    ctx.fillStyle='#fff';ctx.lineWidth=2;circ(-9,hy+3,5);ctx.fill();ctx.stroke();circ(9,hy+3,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.ink;circ(-9,hy+5,2);ctx.fill();circ(9,hy+5,2);ctx.fill();
+    ctx.fillStyle='#8a2f3a';ctx.lineWidth=2.5;ell(0,hy+15,5,5);ctx.fill();ctx.stroke();
+  }else{
+    // side-eye toward you while walking
+    const ox=-n.dir*2.5;
+    circ(-9+ox,hy+5,2.4);ctx.fill();circ(9+ox,hy+5,2.4);ctx.fill();
+    ctx.lineWidth=2.5;line(-14,hy-1,-4,hy);line(14,hy-1,4,hy);line(-4,hy+14,4,hy+14);
+  }
+  ctx.fillStyle=C.blush;ell(-14,hy+10,5,3);ctx.fill();ell(14,hy+10,5,3);ctx.fill();
+  ctx.restore();
+  if(n.state==='point'){
+    const bw=166,bx=clamp(n.x-bw/2,8,W-bw-8),by=Math.max(8,mom.y+36*mom.s-250*s);
+    ctx.fillStyle=C.paper;ctx.strokeStyle=C.ink;ctx.lineWidth=3;rr(bx,by,bw,36,14);ctx.fill();ctx.stroke();
+    bubbleText('醫師！他在擠痘痘！',bx+bw/2,by+18,15,C.ink,C.paper);
+  }
+}
+
+/* ---------- status line: one source of truth, synced every frame ---------- */
+function statusKey(){
+  if(G.mode==='menu'||G.mode==='over')return 'menu';
+  if(G.mode==='ending')return G.caughtBy==='nurse'?'nurseCaught':G.caughtBy==='full'?'full':'caught';
+  if(nurseIs('cross'))return 'nurse';
+  if(mom.state!=='back')return 'look';
+  if(mom.warn)return 'warn';
+  if(nurseIs('steps'))return nurseCount()>=2?'steps2':'steps';
+  if(mom.teaseT>0)return 'tease';
+  return 'back';
+}
+
+/* ---------- game-over portrait: the scar face, severity by rank ---------- */
+sfx.sprout=()=>{tone(260,.09,'sine',.12,240);setTimeout(()=>tone(390,.08,'sine',.1,200),70);};
+const fmtTime=x=>{x=Math.max(0,Math.round(x));return x<60?x+' 秒':Math.floor(x/60)+' 分 '+(x%60)+' 秒';};
+const SEVERITY=['輕微痘疤','明顯痘疤','嚴重痘疤','坑坑疤疤','滿臉坑洞','月球表面'];
+function genScars(rank){
+  const tier=Math.min(5,Math.floor(rank/5)), n=Math.round(4+rank*2.6), out=[];
+  const kinds=tier<1?['roll','roll','ice']:tier<3?['roll','ice','box']:['ice','box','box','roll'];
+  for(let i=0;i<n;i++){
+    let u=0,v=0,ok=false;
+    for(let t=0;t<120&&!ok;t++){
+      u=rand(-.86,.86);v=rand(-.42,.86);
+      ok=(u*u)/(.9*.9)+(v*v)/(.93*.93)<=1&&AVOID.every(a=>Math.hypot(u-a[0],(v-a[1])*1.1)>a[2]*.85)&&out.every(o=>Math.hypot(u-o.u,v-o.v)>.07);
+    }
+    if(!ok)continue;
+    const crater=tier>=5&&Math.random()<.35;
+    out.push({u,v,r:crater?rand(9,15):rand(4.5,7.5)+tier*.9,kind:crater?'crater':kinds[Math.floor(Math.random()*kinds.length)],rot:crater?0:rand(0,Math.PI)});
+  }
+  return out;
+}
+function renderPortrait(rank){
+  const pc=$('#portrait'),S=300;pc.width=S*2;pc.height=S*2;
+  const keep={ctx,W,H,face:{...face},pimples:G.pimples,marks:G.marks,scars:G.scars,held:G.held,expr:G.expr};
+  try{
+    ctx=pc.getContext('2d');ctx.setTransform(2,0,0,2,0,0);W=S;H=S;
+    ctx.fillStyle='#cfe6dd';ctx.fillRect(0,0,S,S);
+    ctx.strokeStyle='#b7d6ca';ctx.lineWidth=2;for(let i=0;i<=S;i+=38){line(i,0,i,S);line(0,i,S,i);}
+    face.rx=S*.32;face.ry=face.rx*1.18;face.k=face.rx/130;face.x=S/2;face.y=S*.56;
+    G.pimples=[];G.marks=[];G.scars=genScars(rank);G.held=null;G.expr=rank>=10?'caught':'worry';
+    drawPlayer();
+  }finally{
+    ctx=keep.ctx;W=keep.W;H=keep.H;Object.assign(face,keep.face);
+    G.pimples=keep.pimples;G.marks=keep.marks;G.scars=keep.scars;G.held=keep.held;G.expr=keep.expr;
+  }
+}
+
+/* ---------- loop ---------- */
+function syncStatusNow(){setStatus(statusKey());}
+function updateFx(dt){
+  const g=900*face.k;
+  for(const q of G.parts){q.life-=dt;q.vy+=g*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;if(q.rot!==undefined)q.rot+=(q.vr||0)*dt;}
+  G.parts=G.parts.filter(q=>q.life>0);
+  for(const t of G.texts){t.life-=dt;t.y+=(t.vy||-50)*dt;}
+  G.texts=G.texts.filter(t=>t.life>0);
+  for(const m of G.marks)m.life-=dt;
+  G.marks=G.marks.filter(m=>m.life>0);
+  G.shake=Math.max(0,G.shake-dt*2.5);
+}
+function updateExpr(dt){
+  if(G.exprT>0){G.exprT-=dt;if(G.exprT>0)return;}
+  G.expr=G.held?'squeeze':(mom.look>.5||nurseIs('cross'))?'innocent':(nurseIs('steps')||(mom.state==='back'&&(mom.warn>0||mom.teaseT>0||mom.syl>=9)))?'worry':'idle';
+}
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;
+  if(!document.hidden){
+    G.clock+=dt;
+    updateMom(dt);updateNurse(dt);
+    if(G.mode==='play'){
+      if(G.held&&mom.state==='facing')caught();
+      else if(G.held&&nurseIs('cross'))caught('nurse');
+      if(playing()){updatePimples(dt);refill(dt);}
+    }else if(G.mode==='ending'&&G.clock>=G.endAt){showEnd();}
+    updateFx(dt);updateExpr(dt);syncStatusNow();
+    render();
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- start / end ---------- */
+function startGame(){
+  ac();
+  G.mode='play';G.score=0;G.phrases=0;G.startClock=G.clock;G.marks=[];G.scars=[];G.caughtBy=null;resetNurses();G.ducked=false;G.parts=[];G.texts=[];G.held=null;G.pointerId=null;G.refillT=0;G.exprT=0;
+  $('#score').textContent='0';
+  musicReset();setRank(0,false);
+  mom.speed=undefined;spawnStart();startChant();
+  $('#startScreen').hidden=true;$('#endScreen').hidden=true;
+  toast('跟著音樂擠，唱完就放手');
+}
+function showEnd(){
+  G.mode='over';G.held=null;
+  const isBest=G.score>best;if(isBest){best=G.score;saveBest();}
+  musicPause();
+  $('#endTitle').textContent=G.caughtBy==='nurse'?'被護理師告密了！':G.caughtBy==='full'?'不開心爆表，出局！':G.score<40?'才剛開始就被抓！':G.score<250?'被醫師抓包了！':'擠痘高手，還是被抓';
+  $('#endScore').textContent=G.score;
+  const meta=$('#endMeta');meta.textContent='';
+  meta.append('分・撐了 '+fmtTime(G.lostAt-G.startClock),document.createElement('br'),'臉上留下 '+G.scars.length+' 個痘疤',document.createElement('br'),isBest?'新紀錄！':'最佳紀錄 '+best+' 分');
+  const rk=rankOf(G.score);$('#endRank').textContent=RANKS[rk];$('#endSev').textContent=SEVERITY[Math.min(5,Math.floor(rk/5))];
+  const eb=$('#endBadge');eb.textContent='';const bc=$('#rankBadge').cloneNode(true);bc.removeAttribute('id');eb.append(bc);
+  const ol=$('#ladder');ol.textContent='';
+  RANKS.forEach((name,i)=>{
+    const li=document.createElement('li'),sp=document.createElement('span');
+    sp.textContent=(i*50)+' 分';li.append(sp,name);
+    if(i<rk)li.className='got';else if(i===rk)li.className='now';
+    ol.append(li);
+  });
+  $('#endScreen').hidden=false;updateBest();renderPortrait(rk);
+  setStatus('menu');
+  try{$('#againBtn').focus({preventScroll:true});}catch(e){}
+}
+
+/* ---------- input ---------- */
+cv.addEventListener('pointerdown',e=>{
+  ac();
+  if(!playing()||G.held)return;
+  const r=cv.getBoundingClientRect(),p=pick(e.clientX-r.left,e.clientY-r.top);
+  if(!p)return;
+  e.preventDefault();
+  try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  G.pointerId=e.pointerId;G.held=p;
+  if(mom.state==='facing'||mom.look>.5)caught();
+  else if(nurseIs('cross'))caught('nurse');
+});
+const release=e=>{if(e.pointerId===G.pointerId){G.held=null;G.pointerId=null;}};
+cv.addEventListener('pointerup',release);
+cv.addEventListener('pointercancel',release);
+cv.addEventListener('lostpointercapture',release);
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('blur',()=>{G.held=null;G.pointerId=null;});
+$('#startBtn').addEventListener('click',startGame);
+$('#againBtn').addEventListener('click',startGame);
+$('#muteBtn').addEventListener('click',()=>{
+  muted=!muted;const b=$('#muteBtn');b.textContent=muted?'音效 關':'音效 開';b.setAttribute('aria-pressed',String(muted));
+});
+window.addEventListener('resize',layout);
+if(window.ResizeObserver)new ResizeObserver(layout).observe(stage);
+
+layout();spawnStart();startChant();setRank(0,false);setStatus('menu');updateBest();
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
