@@ -251,9 +251,35 @@ function saveBest(){try{localStorage.setItem('pimple-mugwood-best',String(best))
 let AC=null, muted=false;
 function ac(){
   if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null;}}
-  if(AC&&AC.state==='suspended'){AC.resume().catch(()=>{});}
+  if(AC&&AC.state!=='running'){AC.resume().catch(()=>{});}
   return AC;
 }
+/* In-app browsers (Messenger, Threads, LINE) and iOS: wake the audio engine on every tap, and on iOS move the page
+   to the media channel so sound still plays when the ring/silent switch is on (like video does). */
+const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+let silentEl=null,silentTried=false;
+function silentWavUrl(){
+  const n=800,b=new Uint8Array(44+n),v=new DataView(b.buffer);
+  const w=(o,t)=>{for(let i=0;i<t.length;i++)b[o+i]=t.charCodeAt(i);};
+  w(0,'RIFF');v.setUint32(4,36+n,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,8000,true);v.setUint32(28,8000,true);v.setUint16(32,1,true);v.setUint16(34,8,true);w(36,'data');v.setUint32(40,n,true);b.fill(128,44);
+  let t='';for(let i=0;i<b.length;i++)t+=String.fromCharCode(b[i]);
+  return 'data:audio/wav;base64,'+btoa(t);
+}
+function unlockAudio(){
+  try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
+  const a=ac();if(!a)return;
+  try{const b=a.createBuffer(1,1,22050),s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);}catch(e){}
+  if(IS_IOS&&!silentTried){
+    silentTried=true;
+    try{silentEl=new Audio(silentWavUrl());silentEl.loop=true;silentEl.setAttribute('playsinline','');silentEl.play().catch(()=>{silentEl=null;});}catch(e){silentEl=null;}
+  }
+}
+['touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true}));
+document.addEventListener('visibilitychange',()=>{
+  if(silentEl){if(document.hidden)silentEl.pause();else silentEl.play().catch(()=>{});}
+  if(!document.hidden&&AC&&AC.state!=='running')AC.resume().catch(()=>{});
+});
 function tone(freq,dur,type,vol,slide){
   const a=ac(); if(!a||muted) return;
   const o=a.createOscillator(), g=a.createGain(), t=a.currentTime;
