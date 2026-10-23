@@ -126,6 +126,8 @@ body{
 .result .big{font-family:var(--f-num);font-size:64px;line-height:.9;font-variant-numeric:tabular-nums}
 .result .meta{font-size:14px;color:var(--ink-soft);line-height:1.6}
 .tip{background:var(--tile);border-radius:14px;padding:10px 12px;font-size:13.5px;line-height:1.6}
+.tip-link{display:block;width:fit-content;margin-top:8px;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--mint-deep);font-size:14px;text-decoration:none}
+.tip-link:hover{background:var(--mint-deep);color:var(--paper)}
 .endrank{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--ink-soft)}
 .endrank .badge{width:46px;height:54px}
 .portrait{display:block;width:100%;max-width:280px;aspect-ratio:1;align-self:center;border:3px solid var(--ink);border-radius:18px;background:var(--tile)}
@@ -202,9 +204,8 @@ body{
       <div class="meta" id="endMeta"></div>
     </div>
     <div class="endrank"><span id="endBadge"></span><div>你的稱號<b id="endRank">痘疤小屁孩</b><span class="sev" id="endSev">輕微痘疤</span></div></div>
-    <div class="tip"><b>現實中的小提醒：</b>別自己擠痘痘。紅腫、沒有頭的發炎痘越擠越深，容易留下紅印和凹疤，交給皮膚科處理比較安全。</div>
+    <div class="tip"><b>現實中的小提醒：</b>別自己擠痘痘，越擠越容易留下紅印和凹疤。有痘痘問題，記得找皮膚科醫師。<a class="tip-link" href="https://esheen.skin/" target="_blank" rel="noopener">前往 esheen.skin →</a></div>
     <button class="btn" id="againBtn" type="button">再擠一次</button>
-    <details class="ladder"><summary>看全部痘疤稱號</summary><ol id="ladder"></ol></details>
   </div>
 </div>
 
@@ -1159,13 +1160,6 @@ function showEnd(){
   meta.append('分・撐了 '+fmtTime(G.lostAt-G.startClock),document.createElement('br'),'臉上留下 '+G.scars.length+' 個痘疤',document.createElement('br'),isBest?'新紀錄！':'最佳紀錄 '+best+' 分');
   const rk=rankOf(G.score);$('#endRank').textContent=RANKS[rk];$('#endSev').textContent=SEVERITY[Math.min(5,Math.floor(rk/5))];
   const eb=$('#endBadge');eb.textContent='';const bc=$('#rankBadge').cloneNode(true);bc.removeAttribute('id');eb.append(bc);
-  const ol=$('#ladder');ol.textContent='';
-  RANKS.forEach((name,i)=>{
-    const li=document.createElement('li'),sp=document.createElement('span');
-    sp.textContent=(i*50)+' 分';li.append(sp,name);
-    if(i<rk)li.className='got';else if(i===rk)li.className='now';
-    ol.append(li);
-  });
   $('#endScreen').hidden=false;updateBest();renderPortrait(rk);
   setStatus('menu');
   try{$('#againBtn').focus({preventScroll:true});}catch(e){}
