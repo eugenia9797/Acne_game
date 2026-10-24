@@ -119,7 +119,8 @@ body{
 @keyframes comboShake{50%{transform:rotate(5deg)}}
 @keyframes toastIn{0%{transform:translateY(-50%) scale(.6)}60%{transform:translateY(-50%) scale(1.08)}100%{transform:translateY(-50%) scale(1)}}
 
-.overlay{position:fixed;inset:0;z-index:5;display:grid;place-items:center;overflow:auto;touch-action:pan-y;background:rgba(42,40,56,.4);
+.goo{position:fixed;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+.overlay{position:fixed;inset:0;z-index:8;display:grid;place-items:center;overflow:auto;touch-action:pan-y;background:rgba(42,40,56,.4);
   padding-top:max(16px,env(safe-area-inset-top,0px));padding-bottom:max(16px,env(safe-area-inset-bottom,0px));
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .card{width:100%;max-width:420px;background:var(--paper);border:3px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink);padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px}
@@ -207,6 +208,8 @@ body{
   </main>
 </div>
 
+<canvas id="goo" class="goo" aria-hidden="true"></canvas>
+
 <div class="overlay" id="startScreen">
   <div class="card start">
     <h1 data-t="name">擠痘木頭人</h1>
@@ -254,6 +257,7 @@ const I18N={
     status:{menu:'醫師在打病歷',back:'背對中・快擠',warn:'要回頭了！',tease:'嗯…？',look:'她在看！別動',caught:'被抓包了',
       steps:'有腳步聲！',steps2:'兩個腳步聲！',nurse:'護理師在看！',nurseCaught:'被護理師抓包',full:'不開心爆表'},
     tStart:'跟著音樂擠，唱完就放手',tCaught:'被看到了！',tNurse:'被護理師看到了！',tFull:'不開心爆表！',tClear:'整臉清空 +30',levelUp:'升級！',
+    tGiant:'超大膿痘出現！快擠！',giantPop:'噗啾！',boom:'爆炸！',
     pop:'啵！',sprout:'冒出來了',scar:'留疤',step:'叩！',
     sayCaught:'不是叫你別擠嗎！',sayFull:'整臉都是痘痘了！',nurseSay:'醫師！他在擠痘痘！',
     eyebrow:'截圖分享你的痘疤臉',
@@ -277,6 +281,7 @@ const I18N={
     status:{menu:'Doctor is charting',back:'Squeeze now!',warn:'Turning!',tease:'Hm…?',look:"She's looking!",caught:'Busted!',
       steps:'Footsteps!',steps2:'Two sets of steps!',nurse:'Nurse is watching!',nurseCaught:'Nurse busted you',full:'Too grumpy!'},
     tStart:'Squeeze to the music. Let go when it ends!',tCaught:'Spotted!',tNurse:'The nurse saw you!',tFull:'Too grumpy!',tClear:'Face cleared +30',levelUp:'Level up! ',
+    tGiant:'Giant zit! Pop it before it blows!',giantPop:'SPLAT! ',boom:'BOOM! ',
     pop:'Pop! ',sprout:'New zit!',scar:'Scar',step:'Clack!',
     sayCaught:'I said no squeezing!',sayFull:'Your face is all zits!',nurseSay:"Doctor! He's popping zits!",
     eyebrow:'Screenshot & share your scar face',
@@ -300,6 +305,7 @@ const I18N={
     status:{menu:'カルテ入力中',back:'背中向き・今だ！',warn:'振り向くよ！',tease:'ん…？',look:'見てる！動かないで',caught:'バレた',
       steps:'足音がする！',steps2:'足音がふたつ！',nurse:'看護師が見てる！',nurseCaught:'看護師にバレた',full:'不機嫌MAX'},
     tStart:'音楽に合わせてつぶして、終わったら手を離して！',tCaught:'見つかった！',tNurse:'看護師に見られた！',tFull:'不機嫌MAX！',tClear:'全部つぶした +30',levelUp:'レベルアップ！',
+    tGiant:'巨大ニキビ出現！早くつぶして！',giantPop:'ブシャッ！',boom:'バクハツ！',
     pop:'プチッ！',sprout:'できた！',scar:'跡が残った',step:'コツッ！',
     sayCaught:'つぶさないでって言ったでしょ！',sayFull:'顔中ニキビだらけ！',nurseSay:'先生！ニキビつぶしてます！',
     eyebrow:'ニキビ跡顔をスクショしてシェアしよう',
@@ -323,6 +329,7 @@ const I18N={
     status:{menu:'차트 작성 중',back:'뒤돌았다・지금 짜!',warn:'돌아본다!',tease:'음…?',look:'보고 있어! 멈춰',caught:'들켰다',
       steps:'발소리!',steps2:'발소리 두 개!',nurse:'간호사가 보고 있어!',nurseCaught:'간호사한테 들켰다',full:'기분 최악'},
     tStart:'음악에 맞춰 짜고, 노래가 끝나면 손을 떼!',tCaught:'들켰다!',tNurse:'간호사한테 들켰다!',tFull:'기분 폭발!',tClear:'얼굴 클리어 +30',levelUp:'레벨 업! ',
+    tGiant:'왕여드름 등장! 빨리 짜!',giantPop:'푸슉! ',boom:'펑! ',
     pop:'톡! ',sprout:'또 났다!',scar:'흉터',step:'또각!',
     sayCaught:'짜지 말라고 했지!',sayFull:'얼굴이 여드름투성이야!',nurseSay:'선생님! 여드름 짜고 있어요!',
     eyebrow:'흉터 얼굴 캡처해서 공유하기',
@@ -364,7 +371,8 @@ const C={
 const TYPES={
   white:{name:'白頭粉刺',hold:.55,pts:10,r:[7,9.5]},
   pus:{name:'膿皰',hold:1.0,pts:25,r:[10,13.5]},
-  black:{name:'黑頭粉刺',hold:.35,pts:5,r:[5,6.5]}
+  black:{name:'黑頭粉刺',hold:.35,pts:5,r:[5,6.5]},
+  giant:{name:'超大膿痘',hold:1.8,pts:80,r:[18,21]}
 };
 
 let W=0,H=0,DPR=1;
@@ -543,6 +551,7 @@ function layout(){
   face.x=W/2; face.y=H-face.ry-Math.max(6,H*0.015);
   mom.s=clamp(Math.min(H*0.37/240,W/380),0.4,1.3);
   mom.x=W/2; mom.y=H*0.43;
+  sizeGoo();
 }
 const fx=u=>face.x+u*face.rx, fy=v=>face.y+v*face.ry;
 function ell(x,y,rx,ry){ctx.beginPath();ctx.ellipse(x,y,Math.max(.1,rx),Math.max(.1,ry),0,0,TAU);}
@@ -712,6 +721,7 @@ function speechBubble(txt,cx,tipY,size,tipX){
 /* ---------- pimples, fingers, effects ---------- */
 function pimpleRadius(p){const g=p.born?Math.min(1,(G.clock-p.born)/.3):1;return p.r*1.2*face.k*(1+.35*p.q)*p.swell*(.25+.75*g);}
 function drawPimple(p){
+  if(p.type==='giant'){ctx.save();drawGiant(p);ctx.restore();return;}
   const T=TYPES[p.type], held=G.held===p;
   const x=fx(p.u)+(held&&!reduceMotion?Math.sin(G.clock*55)*p.q*1.4:0), y=fy(p.v), r=pimpleRadius(p);
   if(p.type!=='black'){
@@ -791,7 +801,7 @@ function drawPlayer(){
   for(const sc of G.scars)drawScar(sc);
   for(const p of G.pimples) drawPimple(p);
   // bowl-cut fringe
-  ctx.fillStyle=C.hair;ctx.beginPath();
+  ctx.strokeStyle=C.ink;ctx.lineWidth=3.5*k;ctx.fillStyle=C.hair;ctx.beginPath();
   ctx.moveTo(X-rx*1.07,Y-ry*.02);
   ctx.bezierCurveTo(X-rx*1.14,Y-ry*1.16,X+rx*1.14,Y-ry*1.16,X+rx*1.07,Y-ry*.02);
   ctx.lineTo(X+rx*.93,Y-ry*.4);
@@ -936,6 +946,7 @@ function sproutOne(){
 function growPimples(){
   const n=1+(Math.random()<Math.min(.8,.35+.03*G.phrases)?1:0);
   for(let i=0;i<n;i++)sproutOne();
+  maybeSpawnGiant();
   sfx.sprout();updateCount();
   if(realCount()>=MAX_PIMPLES)fullFace();
 }
@@ -952,6 +963,144 @@ function fullFace(){
   G.mode='ending';G.endAt=G.clock+1.8;
 }
 function faceCleared(){addScore(30);sfx.clear();toast(L.tClear);}
+/* ---------- giant pus pimple: pop it (pus splatters over the screen) or let the fuse run out (it explodes) ---------- */
+const GIANT_PENALTY=50, GOO_LIFE=10;
+sfx.giant=()=>{tone(150,.3,'sawtooth',.1,140);setTimeout(()=>tone(300,.18,'sawtooth',.08,120),120);};
+sfx.fuse=()=>tone(1046,.07,'square',.08);
+sfx.splat=()=>{noise(.5,.4,450);tone(240,.38,'sine',.28,-190);setTimeout(()=>noise(.3,.22,900),90);};
+sfx.boom=()=>{noise(.8,.5,260);tone(120,.65,'sawtooth',.16,-85);tone(70,.75,'sine',.32,-40);};
+// giants grow on the cheeks; small pimples in the way get swallowed into the giant
+function findGiantSpot(){
+  let best=null,bestD=-1;
+  for(let tries=0;tries<60;tries++){
+    const u=(Math.random()<.5?-1:1)*rand(.4,.55),v=rand(.25,.58);
+    const d=G.pimples.reduce((m,p)=>Math.min(m,p.type==='giant'?0:Math.hypot(u-p.u,v-p.v)),9);
+    if(d>bestD){bestD=d;best=[u,v];}
+  }
+  if(best)G.pimples=G.pimples.filter(p=>p===G.held||Math.hypot(best[0]-p.u,best[1]-p.v)>.2);
+  return best;
+}
+function spawnGiant(){
+  const spot=findGiantSpot();if(!spot)return false;
+  const T=TYPES.giant,fuse=Math.max(10,16-.15*G.phrases);
+  G.pimples.push({type:'giant',u:spot[0],v:spot[1],r:rand(T.r[0],T.r[1]),q:0,swell:1,born:G.clock,ttl:0,fuse,fuseLeft:fuse,beep:99,seed:Math.random()*TAU});
+  sfx.giant();toast(L.tGiant);
+  return true;
+}
+function maybeSpawnGiant(){
+  if(G.phrases<2||G.pimples.some(p=>p.type==='giant'))return;
+  if(Math.random()<Math.min(.45,.18+.02*G.phrases))spawnGiant();
+}
+function updateGiants(dt){
+  for(const p of G.pimples.filter(o=>o.type==='giant')){
+    p.fuseLeft-=dt;
+    p.swell=1+.24*clamp(1-p.fuseLeft/p.fuse,0,1);
+    const sec=Math.ceil(p.fuseLeft);
+    if(p.fuseLeft<3.5&&sec!==p.beep){p.beep=sec;sfx.fuse();}
+    if(p.fuseLeft<=0)explodeGiant(p);
+  }
+}
+function explodeGiant(p){
+  const x=fx(p.u),y=fy(p.v),k=face.k;
+  if(G.held===p)G.held=null;
+  G.pimples.splice(G.pimples.indexOf(p),1);
+  G.marks.push({u:p.u,v:p.v,r:p.r*2.2,life:8,max:8});
+  if(G.scars.length<70)G.scars.push({u:p.u,v:p.v,r:p.r*1.05,kind:'crater',rot:0});
+  for(let i=0;i<30;i++){
+    const a=rand(0,TAU),sp=rand(180,460)*k;
+    G.parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-120*k,r:rand(3,7)*k,life:rand(.6,1.1),max:1.1,color:i%3?C.pus:'#e3555e',kind:'drop'});
+  }
+  addScore(-GIANT_PENALTY);
+  G.texts.push({x,y:y-20*k,txt:L.boom+'-'+GIANT_PENALTY,life:1.3,max:1.3,size:Math.round(26*k+8),color:'#ffd3cf',vy:-50});
+  G.shake=1.3;G.expr='caught';G.exprT=.9;
+  sfx.boom();updateCount();
+}
+function drawGiant(p){
+  const T=TYPES.giant,held=G.held===p,k=face.k,f=clamp(p.fuseLeft/p.fuse,0,1);
+  const shake=(held?p.q*1.8:0)+(f<.3?2.2*(1-f/.3):0);
+  const x=fx(p.u)+(reduceMotion?0:Math.sin(G.clock*55)*shake), y=fy(p.v);
+  const pulse=reduceMotion?1:1+(f<.5?.05*(1-f*2)*Math.sin(G.clock*(6+16*(1-f))):0);
+  const r=pimpleRadius(p)*pulse;
+  // inflamed halo
+  const g=ctx.createRadialGradient(x,y,r*.4,x,y,r*2.1);
+  g.addColorStop(0,'rgba(214,62,74,.6)');g.addColorStop(1,'rgba(214,62,74,0)');
+  ctx.fillStyle=g;circ(x,y,r*2.1);ctx.fill();
+  // swollen base + veins
+  ctx.fillStyle='#df6b6e';ctx.strokeStyle='rgba(42,40,56,.55)';ctx.lineWidth=1.8*k;
+  circ(x,y,r);ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(176,40,58,.55)';ctx.lineWidth=1.4*k;ctx.lineCap='round';
+  for(let i=0;i<6;i++){
+    const a=p.seed+i*TAU/6;
+    ctx.beginPath();ctx.moveTo(x+Math.cos(a)*r*.72,y+Math.sin(a)*r*.72);
+    ctx.quadraticCurveTo(x+Math.cos(a+.25)*r*1.12,y+Math.sin(a+.25)*r*1.12,x+Math.cos(a+.1)*r*1.45,y+Math.sin(a+.1)*r*1.45);ctx.stroke();
+  }
+  // tense yellow dome
+  const hr=r*.66*(1+.35*p.q);
+  const dg=ctx.createRadialGradient(x-hr*.3,y-hr*.35,hr*.1,x,y,hr);
+  dg.addColorStop(0,'#fff3b8');dg.addColorStop(.6,C.pus);dg.addColorStop(1,C.pusShade);
+  ctx.fillStyle=dg;circ(x,y,hr);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.75)';ell(x-hr*.38,y-hr*.42,hr*.3,hr*.16);ctx.fill();
+  // fuse ring: shrinks as the countdown runs, flashes red near the end
+  const fr=r+15*k;
+  ctx.lineCap='round';ctx.lineWidth=4.5*k;
+  ctx.strokeStyle='rgba(42,40,56,.18)';ctx.beginPath();ctx.arc(x,y,fr,0,TAU);ctx.stroke();
+  const flash=f<.3&&!reduceMotion&&Math.sin(G.clock*24)>0;
+  ctx.strokeStyle=f>.35?'#f4b63f':flash?'#fffdf6':'#e3555e';
+  ctx.beginPath();ctx.arc(x,y,fr,-Math.PI/2,-Math.PI/2+TAU*f);ctx.stroke();
+  if(f<.3){bubbleText(String(Math.max(1,Math.ceil(p.fuseLeft))),x+fr*.78,y-fr*.78,Math.round(14*k+8),'#fffdf6','#e3555e');}
+  if(held){
+    ctx.strokeStyle=C.ink;ctx.lineWidth=3*k;
+    ctx.beginPath();ctx.arc(x,y,r+7*k,-Math.PI/2,-Math.PI/2+TAU*p.q);ctx.stroke();
+  }
+}
+
+/* pus splatter: a full-screen layer above the game, semi-transparent, drips and fades over ~10 s */
+const gooCv=$('#goo'),gctx=gooCv.getContext('2d');let GW=1,GH=1,gooDirty=false;
+G.goo=[];
+function sizeGoo(){
+  GW=Math.max(1,window.innerWidth);GH=Math.max(1,window.innerHeight);
+  gooCv.width=Math.round(GW*DPR);gooCv.height=Math.round(GH*DPR);gctx.setTransform(DPR,0,0,DPR,0,0);gooDirty=true;
+}
+function splatGoo(){
+  const spots=[];
+  for(let i=0;i<3;i++)spots.push([rand(.28,.72),rand(.16,.48),rand(.15,.23)]);   // aimed at the doorway
+  for(let i=0;i<7;i++)spots.push([rand(.04,.96),rand(.06,.94),rand(.1,.2)]);
+  for(let i=0;i<14;i++)spots.push([rand(0,1),rand(0,1),rand(.018,.05)]);
+  for(const [x,y,r] of spots){
+    const lobes=[],drips=[],nl=r>.08?5+Math.floor(Math.random()*4):2;
+    for(let j=0;j<nl;j++){const a=rand(0,TAU),d=rand(.55,.95);lobes.push([Math.cos(a)*d,Math.sin(a)*d,rand(.25,.5)]);}
+    if(r>.08){const nd=1+Math.floor(Math.random()*2);for(let j=0;j<nd;j++)drips.push([rand(-.5,.5),rand(.4,1),rand(.08,.13)]);}
+    G.goo.push({x,y,r,lobes,drips,born:G.clock+rand(0,.18)});
+  }
+}
+const easeOutBack=x=>1+2.70158*Math.pow(x-1,3)+1.70158*Math.pow(x-1,2);
+function drawGoo(){
+  if(G.goo.length)G.goo=G.goo.filter(b=>G.clock-b.born<GOO_LIFE);
+  if(!G.goo.length){if(gooDirty){gctx.clearRect(0,0,GW,GH);gooDirty=false;}return;}
+  gctx.clearRect(0,0,GW,GH);gooDirty=true;
+  const md=Math.min(GW,GH);
+  let film=0;
+  for(const b of G.goo){
+    const t=G.clock-b.born;if(t<0)continue;
+    const fade=t<GOO_LIFE-3?1:Math.max(0,(GOO_LIFE-t)/3);film=Math.max(film,fade);
+    const R=b.r*md*(t<.14?easeOutBack(t/.14):1), cx=b.x*GW, cy=b.y*GH+t*md*.006;
+    const path=new Path2D();
+    path.moveTo(cx+R,cy);path.arc(cx,cy,R,0,TAU);
+    for(const [lx,ly,lr] of b.lobes){const x=cx+lx*R,y=cy+ly*R,rr2=lr*R;path.moveTo(x+rr2,y);path.arc(x,y,rr2,0,TAU);}
+    const grow=Math.min(1,t/6);
+    for(const [dx,len,w] of b.drips){
+      const x=cx+dx*R,top=cy+R*.4,ln=R*.35+len*R*1.7*grow,ww=w*R;
+      path.rect(x-ww,top,ww*2,ln);path.moveTo(x+ww*1.5,top+ln);path.arc(x,top+ln,ww*1.5,0,TAU);
+    }
+    gctx.save();gctx.translate(0,3);gctx.fillStyle='rgba(170,122,20,'+(.4*fade)+')';gctx.fill(path);gctx.restore();
+    const g=gctx.createRadialGradient(cx-R*.3,cy-R*.3,R*.1,cx,cy,R*1.5);
+    g.addColorStop(0,'rgba(255,241,168,'+(.74*fade)+')');g.addColorStop(1,'rgba(228,188,60,'+(.66*fade)+')');
+    gctx.fillStyle=g;gctx.fill(path);
+    if(R>md*.05){gctx.fillStyle='rgba(255,255,255,'+(.5*fade)+')';gctx.beginPath();gctx.ellipse(cx-R*.35,cy-R*.42,R*.22,R*.1,-.5,0,TAU);gctx.fill();}
+  }
+  gctx.fillStyle='rgba(240,210,90,'+(.1*film)+')';gctx.fillRect(0,0,GW,GH);
+}
+
 function pick(x,y){
   let hit=null,bd=1e9;
   for(const p of G.pimples){
@@ -964,22 +1113,22 @@ function popPimple(p){
   const x=fx(p.u),y=fy(p.v),T=TYPES[p.type],k=face.k;
   G.pimples.splice(G.pimples.indexOf(p),1);G.held=null;
   G.marks.push({u:p.u,v:p.v,r:p.r*1.3,life:7,max:7});
-  const scarP=Math.min(.85,.08+G.score/1500)*(p.type==='pus'?1.4:p.type==='black'?.5:1);
+  const scarP=Math.min(.85,.08+G.score/1500)*(p.type==='giant'?2:p.type==='pus'?1.4:p.type==='black'?.5:1);
   if(Math.random()<scarP&&G.scars.length<70){
     G.scars.push({u:p.u,v:p.v,r:p.r*rand(.7,1.05),kind:['ice','box','roll'][Math.floor(Math.random()*3)],rot:rand(0,Math.PI)});
     G.texts.push({x:x+20*k,y:y+8*k,txt:L.scar,life:.9,max:.9,size:Math.round(12*k+6),color:'#f3c2b6',vy:-20});
   }
-  const n=p.type==='pus'?16:p.type==='white'?10:4;
+  const big=p.type==='giant',n=big?34:p.type==='pus'?16:p.type==='white'?10:4;
   for(let i=0;i<n;i++){
-    const a=-Math.PI/2+rand(-1.1,1.1),sp=rand(140,330)*k;
-    G.parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:rand(2,4.5)*k,life:rand(.5,.9),max:.9,color:p.type==='pus'?C.pus:C.whiteHead,kind:'drop'});
+    const a=-Math.PI/2+rand(-1.1,1.1)*(big?2:1),sp=rand(140,330)*k*(big?1.6:1);
+    G.parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:rand(2,4.5)*k*(big?1.8:1),life:rand(.5,.9),max:.9,color:p.type==='pus'||big?C.pus:C.whiteHead,kind:'drop'});
   }
   if(p.type==='black')G.parts.push({x,y,vx:rand(-30,30)*k,vy:-260*k,r:3.2*k,life:1,max:1,color:C.blackHead,kind:'plug',rot:-1.2,vr:rand(-6,6)});
   G.combo++;G.maxCombo=Math.max(G.maxCombo,G.combo);
   const pts=Math.round(T.pts*comboMult(G.combo));
   addScore(pts);showCombo();
-  G.texts.push({x,y:y-16*k,txt:(p.type==='pus'?L.pop:'')+'+'+pts,life:.9,max:.9,size:Math.round(20*k+6),color:C.paper,vy:-60});
-  sfx.pop(p.type==='pus');G.expr='happy';G.exprT=.35;
+  G.texts.push({x,y:y-16*k,txt:(big?L.giantPop:p.type==='pus'?L.pop:'')+'+'+pts,life:big?1.3:.9,max:big?1.3:.9,size:Math.round((big?26:20)*k+6),color:C.paper,vy:-60});
+  if(big){sfx.splat();splatGoo();G.shake=.6;}else sfx.pop(p.type==='pus');G.expr='happy';G.exprT=.35;
   updateCount();
   if(!G.pimples.some(o=>!TYPES[o.type].trap))faceCleared();
 }
@@ -1312,10 +1461,10 @@ function frame(now){
     if(G.mode==='play'){
       if(G.held&&mom.state==='facing')caught();
       else if(G.held&&nurseWatching())caught('nurse');
-      if(playing()){updatePimples(dt);refill(dt);}
+      if(playing()){updatePimples(dt);updateGiants(dt);refill(dt);}
     }else if(G.mode==='ending'&&G.clock>=G.endAt){showEnd();}
     updateFx(dt);updateExpr(dt);syncStatusNow();
-    render();
+    render();drawGoo();
   }
   requestAnimationFrame(frame);
 }
@@ -1324,7 +1473,7 @@ function frame(now){
 function startGame(sound){
   if(typeof sound==='boolean'){muted=!sound;updateMuteBtn();}
   ac();
-  G.mode='play';G.score=0;G.phrases=0;endCombo(true);G.maxCombo=0;G.startClock=G.clock;G.marks=[];G.scars=[];G.caughtBy=null;resetNurses();G.ducked=false;G.parts=[];G.texts=[];G.held=null;G.pointerId=null;G.refillT=0;G.exprT=0;
+  G.mode='play';G.score=0;G.phrases=0;G.goo=[];endCombo(true);G.maxCombo=0;G.startClock=G.clock;G.marks=[];G.scars=[];G.caughtBy=null;resetNurses();G.ducked=false;G.parts=[];G.texts=[];G.held=null;G.pointerId=null;G.refillT=0;G.exprT=0;
   $('#score').textContent='0';
   musicReset();setRank(0,false);
   mom.speed=undefined;spawnStart();startChant();
@@ -1381,7 +1530,7 @@ function openLangMenu(open){$('#langMenu').hidden=!open;$('#langBtn').setAttribu
 // back to the start screen: language + sound choice, with the doctor idling behind it
 function goHome(){
   G.mode='menu';G.held=null;G.pointerId=null;endCombo(true);resetNurses();G.ducked=false;musicPause();musicDuck(false);
-  G.score=0;$('#score').textContent='0';G.texts=[];G.parts=[];G.marks=[];G.scars=[];G.expr='idle';G.exprT=0;G.shake=0;
+  G.score=0;$('#score').textContent='0';G.goo=[];G.texts=[];G.parts=[];G.marks=[];G.scars=[];G.expr='idle';G.exprT=0;G.shake=0;
   mom.angry=0;mom.caughtThis=false;mom.speed=undefined;
   spawnStart();startChant();setRank(0,false);statusNow='';setStatus('menu');updateBest();openLangMenu(false);
   $('#endScreen').hidden=true;$('#startScreen').hidden=false;
