@@ -13,7 +13,7 @@
 <title>擠痘木頭人</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Lilita+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Jua&family=Kosugi+Maru&family=Lilita+One&display=swap">
 <style>
 /* Layout: one-screen game. HUD strip, chant meter (一二三木頭人), canvas stage with mom in the doorway and your face up close; overlay cards for start / game over. Single committed look: bathroom-tile mint + ink outlines. */
 :root{
@@ -26,7 +26,7 @@
   --pop:#f0544a;
   --warn:#f4b63f;
   --mint-deep:#357f6c;
-  --f-display:"Huninn","jf open 粉圓","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  --f-display:"Huninn","Kosugi Maru","Jua","jf open 粉圓","PingFang TC","Noto Sans TC","Hiragino Maru Gothic ProN","Apple SD Gothic Neo","Microsoft JhengHei",sans-serif;
   --f-num:"Lilita One","Huninn",system-ui,sans-serif;
   color-scheme:light;
 }
@@ -46,8 +46,6 @@ body{
 .stat{display:flex;align-items:center;gap:6px}
 .lab{font-size:13px;letter-spacing:.08em;color:var(--ink-soft)}
 .num{font-family:var(--f-num);font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
-.strikes i{width:15px;height:15px;border-radius:50%;border:2px solid var(--ink);background:var(--paper);display:inline-block}
-.strikes i.on{background:var(--pop)}
 .mood{position:absolute;z-index:2;top:10px;left:max(10px,env(safe-area-inset-left,0px));height:min(56%,340px);width:40px;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
 .mood-face{width:36px;height:36px;flex:none;overflow:visible;transition:transform .2s}
 .mood-face.bump{animation:moodBump .35s ease-out}
@@ -78,23 +76,23 @@ body{
 .badge .rib{fill:var(--rb,#7aa6d8);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
 .badge .cr{fill:none;stroke:var(--b2,#a8693a);stroke-width:1.4;opacity:var(--cr,0)}
 .badge .lv{font-family:var(--f-num);font-size:11px;fill:var(--ink);text-anchor:middle}
-.tempo{font-size:13px;padding:3px 10px;border-radius:999px;border:2px solid var(--ink);background:var(--paper);white-space:nowrap}
-.tempo.slow{background:#cfe6ff}
-.tempo.fast{background:#ffd5a1}
-.tempo.tick{animation:tick .2s ease-out}
-@keyframes tick{50%{transform:scale(1.18)}}
 .rank.up{animation:rankUp .6s ease-out}
 @keyframes rankUp{0%{transform:scale(1)}40%{transform:scale(1.18);background:var(--warn)}100%{transform:scale(1)}}
 .syls span.lit{background:var(--paper);color:var(--ink);transform:translateY(-2px);box-shadow:0 2px 0 var(--ink)}
 .syls span.hit{background:var(--pop);color:var(--paper)}
+.syls.latin{display:flex;flex-wrap:wrap;justify-content:center;gap:0;padding:4px 10px;border-radius:12px;background:var(--tile-line)}
+.syls.latin span,.syls.latin span.lit,.syls.latin span.hit{aspect-ratio:auto;display:inline;white-space:pre;background:none;box-shadow:none;transform:none;border-radius:0;font-size:clamp(14px,4vw,19px);line-height:1.35}
+.syls.latin span.lit{color:var(--ink)}
+.syls.latin .w{white-space:nowrap}
+.syls.latin span.hit{color:var(--pop)}
 .status{font-size:14px;padding:4px 11px;border-radius:999px;background:var(--mint-deep);color:var(--paper);white-space:nowrap}
 .status.warn{background:var(--warn);color:var(--ink)}
 .status.look{background:var(--pop);color:var(--paper)}
 .stage{position:relative;flex:1;min-height:0}
 #cv{position:absolute;inset:0;display:block;width:100%;height:100%;cursor:pointer}
-.toast{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);font-size:28px;padding:8px 18px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);white-space:nowrap;pointer-events:none;animation:toastIn .45s ease-out}
+.toast{position:absolute;left:16px;right:16px;margin-inline:auto;width:fit-content;max-width:calc(100% - 32px);text-align:center;top:42%;transform:translateY(-50%);font-size:clamp(18px,6vw,28px);line-height:1.3;padding:8px 18px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);pointer-events:none;animation:toastIn .45s ease-out}
 .toast.bad{background:var(--pop);color:var(--paper)}
-@keyframes toastIn{0%{transform:translate(-50%,-50%) scale(.6)}60%{transform:translate(-50%,-50%) scale(1.08)}100%{transform:translate(-50%,-50%) scale(1)}}
+@keyframes toastIn{0%{transform:translateY(-50%) scale(.6)}60%{transform:translateY(-50%) scale(1.08)}100%{transform:translateY(-50%) scale(1)}}
 
 .overlay{position:fixed;inset:0;z-index:5;display:grid;place-items:center;overflow:auto;touch-action:pan-y;background:rgba(42,40,56,.4);
   padding-top:max(16px,env(safe-area-inset-top,0px));padding-bottom:max(16px,env(safe-area-inset-bottom,0px));
@@ -102,55 +100,48 @@ body{
 .card{width:100%;max-width:420px;background:var(--paper);border:3px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink);padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px}
 .eyebrow{font-size:13px;letter-spacing:.14em;color:var(--mint-deep)}
 .card h1,.card h2{margin:0;line-height:1.05;text-wrap:balance;font-weight:400}
-.card h1{font-size:46px}
+.card h1{font-size:clamp(30px,9.5vw,46px)}
 .card h2{font-size:34px}
 .card p{margin:0;font-size:15px;line-height:1.65}
-.rules{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:15px;line-height:1.5}
-.rules li{display:flex;gap:10px;align-items:flex-start}
-.rules li::before{content:"";flex:none;width:9px;height:9px;margin-top:.5em;border-radius:50%;background:var(--pop);border:2px solid var(--ink)}
-.rules b{font-weight:400;color:var(--pop)}
-.legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.legend div{display:flex;gap:8px;align-items:center;min-width:0}
-.legend b{display:block;font-weight:400;font-size:14px}
-.legend small{display:block;font-size:12px;color:var(--ink-soft);line-height:1.35}
-.dot{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--ink)}
-.dot.white{background:radial-gradient(circle,#fffaf0 0 30%,#f2b49d 34% 100%)}
-.dot.pus{background:radial-gradient(circle,#ffdf86 0 36%,#ea7a73 40% 100%)}
-.dot.black{background:radial-gradient(circle,#3a2e2a 0 24%,#f1c3a7 28% 100%)}
-.dot.red{background:radial-gradient(circle at 36% 32%,#ffd6d0 0 12%,#de4f59 16% 100%)}
 .btn{font:inherit;font-size:22px;color:var(--paper);background:var(--pop);border:3px solid var(--ink);border-radius:16px;padding:12px 18px;box-shadow:0 5px 0 var(--ink);cursor:pointer}
 .btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
 :focus-visible{outline:3px solid var(--mint-deep);outline-offset:3px}
 .best{font-size:13px;color:var(--ink-soft);text-align:center}
-.result{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
-.result .big{font-family:var(--f-num);font-size:64px;line-height:.9;font-variant-numeric:tabular-nums}
-.result .meta{font-size:14px;color:var(--ink-soft);line-height:1.6}
-.tip{background:var(--tile);border-radius:14px;padding:10px 12px;font-size:13.5px;line-height:1.6}
-.tip-link{display:block;width:fit-content;margin-top:8px;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--mint-deep);font-size:14px;text-decoration:none}
+.langs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.lang{font:inherit;font-size:14px;padding:8px 2px;border:2px solid var(--ink);border-radius:12px;background:var(--paper);color:var(--ink);cursor:pointer;white-space:nowrap}
+.lang[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.hint{display:flex;gap:10px;align-items:flex-start;background:var(--tile);border-radius:14px;padding:10px 12px;font-size:14.5px;line-height:1.55}
+.spk{flex:none;width:24px;height:24px;margin-top:1px}
+.spk path{fill:var(--pop);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.spk path.wv{fill:none;stroke-width:2;stroke-linecap:round}
+.btn.ghost{background:var(--paper);color:var(--ink);font-size:18px;padding:9px 18px;box-shadow:0 4px 0 var(--ink)}
+.card.end{gap:10px;padding:16px 18px 18px}
+.card.end .eyebrow{font-size:12px;letter-spacing:.06em}
+.card.end h2{font-size:clamp(22px,6.6vw,30px)}
+.card.end .btn{font-size:20px;padding:9px 18px}
+.portrait{display:block;flex:none;width:200px;height:200px;align-self:center;border:3px solid var(--ink);border-radius:18px;background:var(--tile)}
+.endrow{display:flex;align-items:center;justify-content:space-between;gap:8px 14px;flex-wrap:wrap}
+.endrow .big{font-family:var(--f-num);font-size:46px;line-height:.95;font-variant-numeric:tabular-nums;white-space:nowrap}
+.endrow .big small{font-family:var(--f-display);font-size:15px;margin-left:4px;color:var(--ink-soft)}
+.endrank{display:flex;align-items:center;gap:8px;min-width:0}
+.endrank .badge{width:38px;height:45px}
+.endrank .lab2{display:block;font-size:12px;color:var(--ink-soft)}
+.endrank b{display:block;font-weight:400;font-size:19px;line-height:1.2;color:var(--ink)}
+.sev{display:inline-block;margin-top:3px;font-size:12px;padding:1px 9px;border-radius:999px;background:var(--pop);color:var(--paper)}
+.card.end .meta{font-size:12.5px;color:var(--ink-soft);line-height:1.45;margin-top:-4px}
+.tip{background:var(--tile);border-radius:14px;padding:9px 12px;font-size:13.5px;line-height:1.5}
+.tip-link{display:block;width:fit-content;margin-top:6px;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--mint-deep);font-size:14px;text-decoration:none}
 .tip-link:hover{background:var(--mint-deep);color:var(--paper)}
-.endrank{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--ink-soft)}
-.endrank .badge{width:46px;height:54px}
-.portrait{display:block;width:100%;max-width:280px;aspect-ratio:1;align-self:center;border:3px solid var(--ink);border-radius:18px;background:var(--tile)}
-.sev{display:inline-block;margin-top:4px;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--pop);color:var(--paper)}
-.endrank b{display:block;font-weight:400;font-size:28px;color:var(--ink);line-height:1.2}
-.ladder summary{cursor:pointer;font-size:14px;color:var(--mint-deep)}
-.ladder ol{margin:10px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:5px 12px;font-size:13px}
-.ladder li{display:flex;gap:6px;min-width:0;color:var(--ink-soft)}
-.ladder li span{flex:none;min-width:3.4em;text-align:right;font-variant-numeric:tabular-nums}
-.ladder li.got{color:var(--ink)}
-.ladder li.got span{color:var(--mint-deep)}
-.ladder li.now{color:var(--pop)}
-.ladder li.now span{color:var(--pop)}
-@media (max-width:380px){.num{font-size:22px}.card h1{font-size:40px}}
-@media (prefers-reduced-motion:reduce){.toast{animation:none}.syls span{transition:none}.rank.up,.tempo.tick,.mood-face.bump,.mood.danger .mood-track{animation:none}}
+@media (max-width:380px){.num{font-size:22px}}
+@media (prefers-reduced-motion:reduce){.toast{animation:none}.syls span{transition:none}.rank.up,.mood-face.bump,.mood.danger .mood-track{animation:none}}
 </style>
 
 </head>
 <body>
 <div id="app">
   <header class="hud gutter">
-    <div class="stat"><span class="lab">分數</span><span id="score" class="num">0</span></div>
-    <div class="stat"><span class="lab">最佳</span><span id="bestHud" class="num">0</span></div>
+    <div class="stat"><span class="lab" data-t="score">分數</span><span id="score" class="num">0</span></div>
+    <div class="stat"><span class="lab" data-t="best">最佳</span><span id="bestHud" class="num">0</span></div>
     <div class="spacer"></div>
     <button id="muteBtn" class="mute" type="button">音效 開</button>
   </header>
@@ -163,7 +154,7 @@ body{
   </div>
   <main class="stage" id="stage">
     <canvas id="cv" aria-label="遊戲畫面：按住臉上的痘痘來擠"></canvas>
-    <div class="mood" id="mood" data-mood="happy" role="meter" aria-label="不開心程度" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0">
+    <div class="mood" id="mood" data-mood="happy" role="meter" aria-label="不開心" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0">
       <svg class="mood-face" id="moodFace" viewBox="0 0 36 36" aria-hidden="true">
         <circle class="mf-skin" cx="18" cy="18" r="15.5"/>
         <circle class="mf-eye" cx="12.5" cy="15" r="2"/><circle class="mf-eye" cx="23.5" cy="15" r="2"/>
@@ -173,39 +164,40 @@ body{
         <path class="mf m-angry" d="M8.5 10.5 L15 13.2 M27.5 10.5 L21 13.2 M11.5 26 Q18 19.5 24.5 26"/>
       </svg>
       <div class="mood-track"><div class="mood-fill" id="moodFill"></div></div>
-      <div class="mood-lab">不開心</div>
+      <div class="mood-lab" data-t="mood">不開心</div>
     </div>
     <div id="toast" class="toast" hidden></div>
   </main>
 </div>
 
 <div class="overlay" id="startScreen">
-  <div class="card">
-    <div class="eyebrow">一二三木頭人 × 擠痘痘</div>
-    <h1>擠痘木頭人</h1>
-    <p>趁醫師背對你時，按住痘痘偷偷擠。</p>
-    <ul class="rules">
-      <li><span><b>音樂唱完</b>醫師就回頭，手要離開臉</span></li>
-      <li><span><b>聽到腳步聲</b>是護理師，她經過時別擠</span></li>
-      <li><span><b>痘痘會一直長</b>，左邊量表爆表就輸</span></li>
-    </ul>
-    <button class="btn" id="startBtn" type="button">開始擠</button>
+  <div class="card start">
+    <h1 data-t="name">擠痘木頭人</h1>
+    <div class="langs" role="group" aria-label="Language">
+      <button type="button" class="lang" data-lang="zh" lang="zh-Hant">中文</button>
+      <button type="button" class="lang" data-lang="en" lang="en">English</button>
+      <button type="button" class="lang" data-lang="ja" lang="ja">日本語</button>
+      <button type="button" class="lang" data-lang="ko" lang="ko">한국어</button>
+    </div>
+    <p class="hint"><svg class="spk" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9h4l5-4.2v14.4l-5-4.2h-4z"/><path class="wv" d="M16 8.6a4.8 4.8 0 0 1 0 6.8M18.6 6a8.5 8.5 0 0 1 0 12"/></svg><span data-t="hint">開音效更好玩！要聽音樂，才知道醫師什麼時候回頭。</span></p>
+    <button class="btn" id="startSound" type="button" data-t="playSound">開音效開始</button>
+    <button class="btn ghost" id="startMuted" type="button" data-t="playMuted">靜音開始</button>
     <div class="best" id="bestStart"></div>
   </div>
 </div>
 
 <div class="overlay" id="endScreen" hidden>
-  <div class="card">
-    <div class="eyebrow">擠痘木頭人・遊戲結束・截圖分享你的痘疤臉</div>
+  <div class="card end" id="endCard">
+    <div class="eyebrow" data-t="eyebrow">截圖分享你的痘疤臉</div>
     <h2 id="endTitle">被醫師抓包了！</h2>
     <canvas id="portrait" class="portrait" aria-label="你的痘疤臉"></canvas>
-    <div class="result">
-      <div class="big" id="endScore">0</div>
-      <div class="meta" id="endMeta"></div>
+    <div class="endrow">
+      <div class="big"><span id="endScore">0</span><small id="endUnit">分</small></div>
+      <div class="endrank"><span id="endBadge"></span><div><span class="lab2" data-t="titleLab">你的稱號</span><b id="endRank">痘疤小屁孩</b><span class="sev" id="endSev">輕微痘疤</span></div></div>
     </div>
-    <div class="endrank"><span id="endBadge"></span><div>你的稱號<b id="endRank">痘疤小屁孩</b><span class="sev" id="endSev">輕微痘疤</span></div></div>
-    <div class="tip"><b>現實中的小提醒：</b>別自己擠痘痘，越擠越容易留下紅印和凹疤。有痘痘問題，記得找皮膚科醫師。<a class="tip-link" href="https://esheen.skin/" target="_blank" rel="noopener">前往 esheen.skin →</a></div>
-    <button class="btn" id="againBtn" type="button">再擠一次</button>
+    <div class="meta" id="endMeta"></div>
+    <div class="tip"><span data-t="tip">有痘痘或痘疤問題，記得找皮膚專科醫師評估與治療唷！</span><a class="tip-link" href="https://esheen.skin/conditions/acne/acne-vulgaris/" target="_blank" rel="noopener"><span data-t="tipLink">點我找皮膚專科醫師</span> →</a></div>
+    <button class="btn" id="againBtn" type="button" data-t="again">再擠一次</button>
   </div>
 </div>
 
@@ -213,6 +205,103 @@ body{
 (function(){
 "use strict";
 const $=s=>document.querySelector(s);
+/* ---------- languages: 中文 / English / 日本語 / 한국어 ---------- */
+const I18N={
+  zh:{
+    lang:'zh-Hant-TW',name:'擠痘木頭人',latin:false,
+    chant:['被','我','抓','到','你','在','擠','痘','痘','你','就','完','蛋','了'],
+    score:'分數',best:'最佳',soundOn:'音效 開',soundOff:'音效 關',mood:'不開心',
+    stageAria:'遊戲畫面：按住臉上的痘痘來擠',portraitAria:'你的痘疤臉',
+    hint:'開音效更好玩！要聽音樂，才知道醫師什麼時候回頭。',playSound:'開音效開始',playMuted:'靜音開始',
+    bestLine:n=>'最佳紀錄 '+n+' 分',
+    status:{menu:'醫師在打病歷',back:'背對中・快擠',warn:'要回頭了！',tease:'嗯…？',look:'她在看！別動',caught:'被抓包了',
+      steps:'有腳步聲！',steps2:'兩個腳步聲！',nurse:'護理師在看！',nurseCaught:'被護理師抓包',full:'不開心爆表'},
+    tStart:'跟著音樂擠，唱完就放手',tCaught:'被看到了！',tNurse:'被護理師看到了！',tFull:'不開心爆表！',tClear:'整臉清空 +30',levelUp:'升級！',
+    pop:'啵！',sprout:'冒出來了',scar:'留疤',step:'叩！',
+    sayCaught:'不是叫你別擠嗎！',sayFull:'整臉都是痘痘了！',nurseSay:'醫師！他在擠痘痘！',
+    eyebrow:'截圖分享你的痘疤臉',
+    endNurse:'被護理師告密了！',endFull:'不開心爆表，出局！',endEarly:'才剛開始就被抓！',endDoc:'被醫師抓包了！',endPro:'擠痘高手，還是被抓',
+    unit:'分',lasted:t=>'撐了 '+t,scars:n=>'留下 '+n+' 個痘疤',newBest:'新紀錄！',bestMeta:n=>'最佳 '+n+' 分',
+    sec:n=>n+' 秒',minsec:(m,s)=>m+' 分 '+s+' 秒',titleLab:'你的稱號',
+    tip:'有痘痘或痘疤問題，記得找皮膚專科醫師評估與治療唷！',tipLink:'點我找皮膚專科醫師',again:'再擠一次',
+    ranks:['痘疤小屁孩','痘疤菜鳥','痘疤見習生','痘疤老鳥','痘疤達人','痘疤職人','痘疤學士','痘疤碩士','痘疤博士','痘疤教授',
+      '痘疤狂人','痘疤魔人','痘疤戰士','痘疤騎士','痘疤將軍','痘疤元帥','痘疤霸主','痘疤大魔王','痘疤宗師','痘疤武林盟主',
+      '痘疤天王','痘疤皇帝','痘疤至尊','痘疤仙人','痘疤天尊','痘疤之神','痘疤創世神','痘疤宇宙主宰','行走的月球表面','月球表面本尊'],
+    sev:['輕微痘疤','明顯痘疤','嚴重痘疤','坑坑疤疤','滿臉坑洞','月球表面']
+  },
+  en:{
+    lang:'en',name:'Zit Freeze',latin:true,
+    chant:['If ','I ','catch ','you ','pop','ping ','a','ny ','zits, ',"you'll ",'be ','in ','trou','ble!'],
+    score:'Score',best:'Best',soundOn:'Sound on',soundOff:'Sound off',mood:'Grumpy',
+    stageAria:'Game screen: press and hold a pimple to squeeze it',portraitAria:'Your scar face',
+    hint:'Sound on is way more fun! The music tells you when the doctor will turn around.',playSound:'Play with sound',playMuted:'Play muted',
+    bestLine:n=>'Best: '+n,
+    status:{menu:'Doctor is charting',back:'Squeeze now!',warn:'Turning!',tease:'Hm…?',look:"She's looking!",caught:'Busted!',
+      steps:'Footsteps!',steps2:'Two sets of steps!',nurse:'Nurse is watching!',nurseCaught:'Nurse busted you',full:'Too grumpy!'},
+    tStart:'Squeeze to the music. Let go when it ends!',tCaught:'Spotted!',tNurse:'The nurse saw you!',tFull:'Too grumpy!',tClear:'Face cleared +30',levelUp:'Level up! ',
+    pop:'Pop! ',sprout:'New zit!',scar:'Scar',step:'Clack!',
+    sayCaught:'I said no squeezing!',sayFull:'Your face is all zits!',nurseSay:"Doctor! He's popping zits!",
+    eyebrow:'Screenshot & share your scar face',
+    endNurse:'The nurse told on you!',endFull:'Too grumpy. Game over!',endEarly:'Caught right away!',endDoc:'Busted by the doctor!',endPro:'Zit pro, still busted',
+    unit:'pts',lasted:t=>'Lasted '+t,scars:n=>n+(n===1?' scar left':' scars left'),newBest:'New record!',bestMeta:n=>'Best: '+n,
+    sec:n=>n+'s',minsec:(m,s)=>m+'m '+s+'s',titleLab:'Your title',
+    tip:'Got acne or acne scars? See a board-certified dermatologist for diagnosis and treatment!',tipLink:'Find a dermatologist',again:'Play again',
+    ranks:['Scar Kid','Scar Newbie','Scar Trainee','Scar Veteran','Scar Expert','Scar Artisan','Scar Bachelor',"Scar Master's",'Scar PhD','Scar Professor',
+      'Scar Maniac','Scar Fiend','Scar Warrior','Scar Knight','Scar General','Scar Marshal','Scar Overlord','Scar Demon King','Scar Grandmaster','Scar Martial Lord',
+      'Scar Superstar','Scar Emperor','Scar Supreme','Scar Immortal','Scar Celestial','Scar God','Scar Creator','Scar Ruler of the Universe','Walking Moon Surface','The Moon Itself'],
+    sev:['Mild scars','Visible scars','Severe scars','Pitted all over','Crater face','Moon surface']
+  },
+  ja:{
+    lang:'ja',name:'ニキビがころんだ',latin:false,
+    chant:['ニ','キ','ビ','を','つ','ぶ','し','た','ら','お','し','ま','い','よ'],
+    score:'スコア',best:'ベスト',soundOn:'音 ON',soundOff:'音 OFF',mood:'不機嫌',
+    stageAria:'ゲーム画面：ニキビを長押ししてつぶす',portraitAria:'あなたのニキビ跡顔',
+    hint:'音ありがおすすめ！音楽を聞けば、先生が振り向くタイミングがわかるよ。',playSound:'音ありで遊ぶ',playMuted:'音なしで遊ぶ',
+    bestLine:n=>'ベスト '+n+'点',
+    status:{menu:'カルテ入力中',back:'背中向き・今だ！',warn:'振り向くよ！',tease:'ん…？',look:'見てる！動かないで',caught:'バレた',
+      steps:'足音がする！',steps2:'足音がふたつ！',nurse:'看護師が見てる！',nurseCaught:'看護師にバレた',full:'不機嫌MAX'},
+    tStart:'音楽に合わせてつぶして、終わったら手を離して！',tCaught:'見つかった！',tNurse:'看護師に見られた！',tFull:'不機嫌MAX！',tClear:'全部つぶした +30',levelUp:'レベルアップ！',
+    pop:'プチッ！',sprout:'できた！',scar:'跡が残った',step:'コツッ！',
+    sayCaught:'つぶさないでって言ったでしょ！',sayFull:'顔中ニキビだらけ！',nurseSay:'先生！ニキビつぶしてます！',
+    eyebrow:'ニキビ跡顔をスクショしてシェアしよう',
+    endNurse:'看護師に告げ口された！',endFull:'不機嫌MAXでアウト！',endEarly:'始まってすぐバレた！',endDoc:'先生にバレた！',endPro:'つぶしの達人も、ついにバレた',
+    unit:'点',lasted:t=>t+'耐えた',scars:n=>'ニキビ跡 '+n+'個',newBest:'新記録！',bestMeta:n=>'ベスト '+n+'点',
+    sec:n=>n+'秒',minsec:(m,s)=>m+'分'+s+'秒',titleLab:'あなたの称号',
+    tip:'ニキビやニキビ跡のお悩みは、皮膚科専門医に診察・治療してもらいましょう！',tipLink:'皮膚科専門医に相談する',again:'もう一回',
+    ranks:['ニキビ跡キッズ','ニキビ跡ルーキー','ニキビ跡見習い','ニキビ跡ベテラン','ニキビ跡達人','ニキビ跡職人','ニキビ跡学士','ニキビ跡修士','ニキビ跡博士','ニキビ跡教授',
+      'ニキビ跡マニア','ニキビ跡魔人','ニキビ跡戦士','ニキビ跡騎士','ニキビ跡将軍','ニキビ跡元帥','ニキビ跡覇王','ニキビ跡大魔王','ニキビ跡師範','ニキビ跡総帥',
+      'ニキビ跡天王','ニキビ跡皇帝','ニキビ跡至尊','ニキビ跡仙人','ニキビ跡天尊','ニキビ跡の神','ニキビ跡創造神','ニキビ跡宇宙の支配者','歩く月面','月面そのもの'],
+    sev:['軽いニキビ跡','目立つニキビ跡','重いニキビ跡','デコボコ肌','クレーター顔','月面']
+  },
+  ko:{
+    lang:'ko',name:'여드름 꽃이 피었습니다',latin:false,
+    chant:['여','드','름','을','짜','다','걸','리','면','너','큰','일','난','다'],
+    score:'점수',best:'최고',soundOn:'소리 켬',soundOff:'소리 끔',mood:'짜증',
+    stageAria:'게임 화면: 여드름을 길게 눌러서 짜기',portraitAria:'나의 흉터 얼굴',
+    hint:'소리를 켜면 더 재밌어요! 음악을 들어야 선생님이 언제 돌아볼지 알 수 있어요.',playSound:'소리 켜고 시작',playMuted:'소리 끄고 시작',
+    bestLine:n=>'최고 기록 '+n+'점',
+    status:{menu:'차트 작성 중',back:'뒤돌았다・지금 짜!',warn:'돌아본다!',tease:'음…?',look:'보고 있어! 멈춰',caught:'들켰다',
+      steps:'발소리!',steps2:'발소리 두 개!',nurse:'간호사가 보고 있어!',nurseCaught:'간호사한테 들켰다',full:'기분 최악'},
+    tStart:'음악에 맞춰 짜고, 노래가 끝나면 손을 떼!',tCaught:'들켰다!',tNurse:'간호사한테 들켰다!',tFull:'기분 폭발!',tClear:'얼굴 클리어 +30',levelUp:'레벨 업! ',
+    pop:'톡! ',sprout:'또 났다!',scar:'흉터',step:'또각!',
+    sayCaught:'짜지 말라고 했지!',sayFull:'얼굴이 여드름투성이야!',nurseSay:'선생님! 여드름 짜고 있어요!',
+    eyebrow:'흉터 얼굴 캡처해서 공유하기',
+    endNurse:'간호사가 일러바쳤다!',endFull:'기분 폭발, 아웃!',endEarly:'시작하자마자 들켰다!',endDoc:'선생님한테 들켰다!',endPro:'여드름 고수도 결국 들켰다',
+    unit:'점',lasted:t=>t+' 버팀',scars:n=>'흉터 '+n+'개',newBest:'신기록!',bestMeta:n=>'최고 '+n+'점',
+    sec:n=>n+'초',minsec:(m,s)=>m+'분 '+s+'초',titleLab:'나의 칭호',
+    tip:'여드름이나 여드름 흉터가 고민이라면 피부과 전문의에게 진료와 치료를 받으세요!',tipLink:'피부과 전문의 찾기',again:'다시 하기',
+    ranks:['흉터 꼬맹이','흉터 초보','흉터 견습생','흉터 베테랑','흉터 달인','흉터 장인','흉터 학사','흉터 석사','흉터 박사','흉터 교수',
+      '흉터 광인','흉터 마인','흉터 전사','흉터 기사','흉터 장군','흉터 원수','흉터 패왕','흉터 대마왕','흉터 그랜드마스터','흉터 무림맹주',
+      '흉터 천왕','흉터 황제','흉터 지존','흉터 신선','흉터 천존','흉터의 신','흉터 창조신','흉터 우주 지배자','걸어다니는 달 표면','달 표면 그 자체'],
+    sev:['가벼운 흉터','눈에 띄는 흉터','심한 흉터','울퉁불퉁 피부','분화구 얼굴','달 표면']
+  }
+};
+function detectLang(){
+  try{const s=localStorage.getItem('pimple-lang');if(s&&I18N[s])return s;}catch(e){}
+  const l=(navigator.language||'zh').toLowerCase();
+  return l.startsWith('ja')?'ja':l.startsWith('ko')?'ko':l.startsWith('zh')?'zh':'en';
+}
+let LANG='zh',L=I18N.zh,RANKS=L.ranks,SEVERITY=L.sev;
 const cv=$('#cv'), stage=$('#stage');
 let ctx=cv.getContext('2d');
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -399,13 +488,10 @@ function musicPause(){music.phrase=null;}
 function musicReset(){music.phrase=null;music.startedAt=nowS();musicDuck(false);}
 
 /* ---------- 痘疤 ranks: one every 50 points ---------- */
-const RANKS=['痘疤小屁孩','痘疤菜鳥','痘疤見習生','痘疤老鳥','痘疤達人','痘疤職人','痘疤學士','痘疤碩士','痘疤博士','痘疤教授',
-  '痘疤狂人','痘疤魔人','痘疤戰士','痘疤騎士','痘疤將軍','痘疤元帥','痘疤霸主','痘疤大魔王','痘疤宗師','痘疤武林盟主',
-  '痘疤天王','痘疤皇帝','痘疤至尊','痘疤仙人','痘疤天尊','痘疤之神','痘疤創世神','痘疤宇宙主宰','行走的月球表面','月球表面本尊'];
-const rankOf=s=>Math.min(RANKS.length-1,Math.floor(s/50));
+const rankOf=s=>Math.min(RANKS.length-1,Math.floor(s/200));
 
 /* ---------- layout & drawing helpers ---------- */
-const FONT='"Huninn","jf open 粉圓","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
+const FONT='"Huninn","Kosugi Maru","Jua","jf open 粉圓","PingFang TC","Noto Sans TC","Hiragino Maru Gothic ProN","Apple SD Gothic Neo","Microsoft JhengHei",sans-serif';
 function layout(){
   const r=stage.getBoundingClientRect();
   W=Math.max(1,r.width); H=Math.max(1,r.height);
@@ -567,12 +653,19 @@ function drawMom(){
     ctx.fillStyle='#f4b63f';ctx.strokeStyle=C.ink;ctx.lineWidth=3;circ(44,-238,17);ctx.fill();ctx.stroke();
     bubbleText('！',44,-237,22,C.ink,'#f4b63f');
   }
-  if(mom.angry>0){
-    ctx.fillStyle=C.paper;ctx.strokeStyle=C.ink;ctx.lineWidth=3;
-    rr(-186,-262,152,38,14);ctx.fill();ctx.stroke();
-    ctx.beginPath();ctx.moveTo(-50,-226);ctx.lineTo(-34,-212);ctx.lineTo(-64,-225);ctx.fill();
-    bubbleText(mom.say||'不是叫你別擠嗎！',-110,-243,16,C.ink,C.paper);
-  }
+  ctx.restore();
+  if(mom.angry>0)speechBubble(L[mom.say||'sayCaught'],mom.x-30*s,mom.y-226*s,Math.round(16*s+2),mom.x-10*s);
+}
+function speechBubble(txt,cx,tipY,size,tipX){
+  const maxW=W-16;
+  ctx.font=size+'px '+FONT;let tw=ctx.measureText(txt).width;
+  if(tw+28>maxW){size=Math.max(10,Math.floor(size*(maxW-28)/tw));ctx.font=size+'px '+FONT;tw=ctx.measureText(txt).width;}
+  const w=tw+28,h=size+18,minX=w<=W-74?58:8,x=clamp(cx-w/2,minX,W-w-8),y=Math.max(4,tipY-12-h),tx=clamp(tipX,x+18,x+w-18);
+  ctx.save();ctx.lineJoin='round';ctx.fillStyle=C.paper;ctx.strokeStyle=C.ink;ctx.lineWidth=3;
+  rr(x,y,w,h,14);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(tx-9,y+h-1.5);ctx.lineTo(tx,Math.max(y+h+4,Math.min(tipY,y+h+12)));ctx.lineTo(tx+9,y+h-1.5);ctx.fill();ctx.stroke();
+  ctx.fillRect(tx-7.5,y+h-4.5,15,4);
+  bubbleText(txt,x+w/2,y+h/2+1,size,C.ink,C.paper);
   ctx.restore();
 }
 
@@ -625,7 +718,9 @@ function drawFx(){
   ctx.globalAlpha=1;
   for(const t of G.texts){
     const a=clamp(t.life/t.max,0,1);ctx.globalAlpha=a;
-    bubbleText(t.txt,t.x,t.y,t.size,t.color,C.ink);
+    let size=t.size;ctx.font=size+'px '+FONT;let w=ctx.measureText(t.txt).width;
+    if(w>W-24){size=Math.max(10,Math.floor(size*(W-24)/w));ctx.font=size+'px '+FONT;w=ctx.measureText(t.txt).width;}
+    bubbleText(t.txt,clamp(t.x,w/2+10,W-w/2-10),t.y,size,t.color,C.ink);
   }
   ctx.globalAlpha=1;
 }
@@ -736,20 +831,19 @@ function render(){
 }
 
 /* ---------- HUD helpers ---------- */
-const sylEls=[...document.querySelectorAll('#syls span')];
+let sylEls=[...document.querySelectorAll('#syls span')];
 const statusEl=$('#status');
-const STATUS={menu:['醫師在打病歷',''],back:['背對中・快擠',''],warn:['要回頭了！','look'],tease:['嗯…？','warn'],look:['她在看！別動','look'],caught:['被抓包了','look'],
-  steps:['有腳步聲！','warn'],steps2:['兩個腳步聲！','warn'],nurse:['護理師在看！','look'],nurseCaught:['被護理師抓包','look'],full:['不開心爆表','look']};
+const STATUS_CLS={menu:'',back:'',warn:'look',tease:'warn',look:'look',caught:'look',steps:'warn',steps2:'warn',nurse:'look',nurseCaught:'look',full:'look'};
 let statusNow='';
-function setStatus(k){if(k===statusNow)return;statusNow=k;const s=STATUS[k];statusEl.textContent=s[0];statusEl.className='status'+(s[1]?' '+s[1]:'');}
+function setStatus(k){if(k===statusNow)return;statusNow=k;const c=STATUS_CLS[k];statusEl.textContent=L.status[k];statusEl.className='status'+(c?' '+c:'');}
 function setSyls(n){sylEls.forEach((el,i)=>{el.classList.toggle('lit',i<=n&&i<13);el.classList.toggle('hit',i<=n&&i===13);});}
 function addScore(n){
   const before=rankOf(G.score);
   G.score=Math.max(0,G.score+n);$('#score').textContent=G.score;
   const r=rankOf(G.score);
-  if(r!==before){setRank(r,r>before);if(r>before&&playing()){G.texts.push({x:face.x,y:face.y-face.ry*.5,txt:'升級！'+RANKS[r],life:1.6,max:1.6,size:Math.round(20*face.k+6),color:'#ffe08a',vy:-28});sfx.level();}}
+  if(r!==before){setRank(r,r>before);if(r>before&&playing()){G.texts.push({x:face.x,y:face.y-face.ry*.5,txt:L.levelUp+RANKS[r],life:1.6,max:1.6,size:Math.round(20*face.k+6),color:'#ffe08a',vy:-28});sfx.level();}}
 }
-function updateBest(){$('#bestStart').textContent=best>0?'最佳紀錄 '+best+' 分':'';$('#bestHud').textContent=best;}
+function updateBest(){$('#bestStart').textContent=best>0?L.bestLine(best):'';$('#bestHud').textContent=best;}
 let toastTimer=0;
 function toast(txt,bad){
   const el=$('#toast');el.textContent=txt;el.classList.toggle('bad',!!bad);
@@ -797,7 +891,7 @@ function spawnStart(){
 const MIN_PIMPLES=5;
 function sproutOne(){
   const np=addPimple(randomType(),true);
-  G.texts.push({x:fx(np.u),y:fy(np.v)-16*face.k,txt:'冒出來了',life:.8,max:.8,size:Math.round(12*face.k+6),color:'#ffe0d6',vy:-24});
+  G.texts.push({x:fx(np.u),y:fy(np.v)-16*face.k,txt:L.sprout,life:.8,max:.8,size:Math.round(12*face.k+6),color:'#ffe0d6',vy:-24});
 }
 function growPimples(){
   const n=1+(Math.random()<Math.min(.8,.35+.03*G.phrases)?1:0);
@@ -812,12 +906,12 @@ function refill(dt){
 }
 function fullFace(){
   if(G.mode!=='play')return;
-  mom.caughtThis=true;mom.angry=99;mom.say='整臉都是痘痘了！';G.held=null;G.caughtBy='full';G.lostAt=G.clock;
+  mom.caughtThis=true;mom.angry=99;mom.say='sayFull';G.held=null;G.caughtBy='full';G.lostAt=G.clock;
   G.shake=.8;G.expr='worry';G.exprT=99;
-  musicPause();musicDuck(false);sfx.caught();toast('不開心爆表！',true);
+  musicPause();musicDuck(false);sfx.caught();toast(L.tFull,true);
   G.mode='ending';G.endAt=G.clock+1.8;
 }
-function faceCleared(){addScore(30);sfx.clear();toast('整臉清空 +30');}
+function faceCleared(){addScore(30);sfx.clear();toast(L.tClear);}
 function pick(x,y){
   let hit=null,bd=1e9;
   for(const p of G.pimples){
@@ -833,7 +927,7 @@ function popPimple(p){
   const scarP=Math.min(.85,.08+G.score/1500)*(p.type==='pus'?1.4:p.type==='black'?.5:1);
   if(Math.random()<scarP&&G.scars.length<70){
     G.scars.push({u:p.u,v:p.v,r:p.r*rand(.7,1.05),kind:['ice','box','roll'][Math.floor(Math.random()*3)],rot:rand(0,Math.PI)});
-    G.texts.push({x:x+20*k,y:y+8*k,txt:'留疤',life:.9,max:.9,size:Math.round(12*k+6),color:'#f3c2b6',vy:-20});
+    G.texts.push({x:x+20*k,y:y+8*k,txt:L.scar,life:.9,max:.9,size:Math.round(12*k+6),color:'#f3c2b6',vy:-20});
   }
   const n=p.type==='pus'?16:p.type==='white'?10:4;
   for(let i=0;i<n;i++){
@@ -842,7 +936,7 @@ function popPimple(p){
   }
   if(p.type==='black')G.parts.push({x,y,vx:rand(-30,30)*k,vy:-260*k,r:3.2*k,life:1,max:1,color:C.blackHead,kind:'plug',rot:-1.2,vr:rand(-6,6)});
   addScore(T.pts);
-  G.texts.push({x,y:y-16*k,txt:(p.type==='pus'?'啵！':'')+'+'+T.pts,life:.9,max:.9,size:Math.round(20*k+6),color:C.paper,vy:-60});
+  G.texts.push({x,y:y-16*k,txt:(p.type==='pus'?L.pop:'')+'+'+T.pts,life:.9,max:.9,size:Math.round(20*k+6),color:C.paper,vy:-60});
   sfx.pop(p.type==='pus');G.expr='happy';G.exprT=.35;
   updateCount();
   if(!G.pimples.some(o=>!TYPES[o.type].trap))faceCleared();
@@ -927,10 +1021,10 @@ function beginTurn(){
 }
 function caught(by){
   if(mom.caughtThis||G.mode!=='play')return;
-  mom.caughtThis=true;mom.angry=99;mom.say='不是叫你別擠嗎！';G.held=null;G.caughtBy=by||'doctor';G.lostAt=G.clock;
+  mom.caughtThis=true;mom.angry=99;mom.say='sayCaught';G.held=null;G.caughtBy=by||'doctor';G.lostAt=G.clock;
   if(by==='nurse'){const cn=nurses.filter(n=>n.state==='cross').sort((p,q)=>Math.abs(p.x-W/2)-Math.abs(q.x-W/2));if(cn[0])cn[0].state='point';if(mom.state==='back'){mom.state='turning';mom.t=0;mom.teaseT=0;mom.warn=0;}}
   G.shake=1;G.expr='caught';G.exprT=99;
-  musicPause();musicDuck(false);sfx.caught();toast(by==='nurse'?'被護理師看到了！':'被看到了！',true);
+  musicPause();musicDuck(false);sfx.caught();toast(by==='nurse'?L.tNurse:L.tCaught,true);
   G.mode='ending';G.endAt=G.clock+(by==='nurse'?2:1.5);
 }
 function updateMom(dt){
@@ -1014,7 +1108,7 @@ function updateOneNurse(n,dt){
       n.stepT+=.3;
       const k=Math.min(1,n.t/1.3), ex=n.dir>0?34:W-34;
       footstep(n.dir>0?-.9:.9,.3+.3*k);
-      G.texts.push({x:ex,y:mom.y-rand(30,110)*mom.s,txt:'叩！',life:.6,max:.6,size:Math.round(20+8*k),color:C.paper,vy:-30});
+      G.texts.push({x:ex,y:mom.y-rand(30,110)*mom.s,txt:L.step,life:.6,max:.6,size:Math.round(20+8*k),color:C.paper,vy:-30});
     }
     if(n.t>=1.3){n.state='cross';n.t=0;n.phase=0;n.dur=Math.max(1.1,1.7-.04*Math.floor(G.phrases/4));}
   }else if(n.state==='cross'){
@@ -1079,11 +1173,7 @@ function drawNurse(n){
   }
   ctx.fillStyle=C.blush;ell(-14,hy+10,5,3);ctx.fill();ell(14,hy+10,5,3);ctx.fill();
   ctx.restore();
-  if(n.state==='point'){
-    const bw=166,bx=clamp(n.x-bw/2,8,W-bw-8),by=Math.max(8,mom.y+36*mom.s-250*s);
-    ctx.fillStyle=C.paper;ctx.strokeStyle=C.ink;ctx.lineWidth=3;rr(bx,by,bw,36,14);ctx.fill();ctx.stroke();
-    bubbleText('醫師！他在擠痘痘！',bx+bw/2,by+18,15,C.ink,C.paper);
-  }
+  if(n.state==='point')speechBubble(L.nurseSay,n.x,mom.y+36*mom.s-226*s,Math.round(15*mom.s+2),n.x);
 }
 
 /* ---------- status line: one source of truth, synced every frame ---------- */
@@ -1100,8 +1190,7 @@ function statusKey(){
 
 /* ---------- game-over portrait: the scar face, severity by rank ---------- */
 sfx.sprout=()=>{tone(260,.09,'sine',.12,240);setTimeout(()=>tone(390,.08,'sine',.1,200),70);};
-const fmtTime=x=>{x=Math.max(0,Math.round(x));return x<60?x+' 秒':Math.floor(x/60)+' 分 '+(x%60)+' 秒';};
-const SEVERITY=['輕微痘疤','明顯痘疤','嚴重痘疤','坑坑疤疤','滿臉坑洞','月球表面'];
+const fmtTime=x=>{x=Math.max(0,Math.round(x));return x<60?L.sec(x):L.minsec(Math.floor(x/60),x%60);};
 function genScars(rank){
   const tier=Math.min(5,Math.floor(rank/5)), n=Math.round(4+rank*2.6), out=[];
   const kinds=tier<1?['roll','roll','ice']:tier<3?['roll','ice','box']:['ice','box','box','roll'];
@@ -1167,26 +1256,36 @@ function frame(now){
 }
 
 /* ---------- start / end ---------- */
-function startGame(){
+function startGame(sound){
+  if(typeof sound==='boolean'){muted=!sound;updateMuteBtn();}
   ac();
   G.mode='play';G.score=0;G.phrases=0;G.startClock=G.clock;G.marks=[];G.scars=[];G.caughtBy=null;resetNurses();G.ducked=false;G.parts=[];G.texts=[];G.held=null;G.pointerId=null;G.refillT=0;G.exprT=0;
   $('#score').textContent='0';
   musicReset();setRank(0,false);
   mom.speed=undefined;spawnStart();startChant();
   $('#startScreen').hidden=true;$('#endScreen').hidden=true;
-  toast('跟著音樂擠，唱完就放手');
+  toast(L.tStart);
+}
+// size the portrait so the whole result card fits on one screen, no scrolling
+function fitEnd(){
+  const ov=$('#endScreen');if(ov.hidden)return;
+  const card=$('#endCard'),pc=$('#portrait'),oc=getComputedStyle(ov),cc=getComputedStyle(card);
+  pc.style.width=pc.style.height='0px';
+  const free=window.innerHeight-parseFloat(oc.paddingTop)-parseFloat(oc.paddingBottom)-card.offsetHeight-6;
+  const innerW=card.clientWidth-parseFloat(cc.paddingLeft)-parseFloat(cc.paddingRight);
+  const size=Math.round(Math.max(84,Math.min(260,innerW,free)));
+  pc.style.width=pc.style.height=size+'px';
 }
 function showEnd(){
   G.mode='over';G.held=null;
   const isBest=G.score>best;if(isBest){best=G.score;saveBest();}
   musicPause();
-  $('#endTitle').textContent=G.caughtBy==='nurse'?'被護理師告密了！':G.caughtBy==='full'?'不開心爆表，出局！':G.score<40?'才剛開始就被抓！':G.score<250?'被醫師抓包了！':'擠痘高手，還是被抓';
-  $('#endScore').textContent=G.score;
-  const meta=$('#endMeta');meta.textContent='';
-  meta.append('分・撐了 '+fmtTime(G.lostAt-G.startClock),document.createElement('br'),'臉上留下 '+G.scars.length+' 個痘疤',document.createElement('br'),isBest?'新紀錄！':'最佳紀錄 '+best+' 分');
+  $('#endTitle').textContent=G.caughtBy==='nurse'?L.endNurse:G.caughtBy==='full'?L.endFull:G.score<40?L.endEarly:G.score<600?L.endDoc:L.endPro;
+  $('#endScore').textContent=G.score;$('#endUnit').textContent=L.unit;
+  $('#endMeta').textContent=[L.lasted(fmtTime(G.lostAt-G.startClock)),L.scars(G.scars.length),isBest?L.newBest:L.bestMeta(best)].join(' · ');
   const rk=rankOf(G.score);$('#endRank').textContent=RANKS[rk];$('#endSev').textContent=SEVERITY[Math.min(5,Math.floor(rk/5))];
   const eb=$('#endBadge');eb.textContent='';const bc=$('#rankBadge').cloneNode(true);bc.removeAttribute('id');eb.append(bc);
-  $('#endScreen').hidden=false;updateBest();renderPortrait(rk);
+  $('#endScreen').hidden=false;updateBest();renderPortrait(rk);fitEnd();
   setStatus('menu');
   try{$('#againBtn').focus({preventScroll:true});}catch(e){}
 }
@@ -1209,15 +1308,36 @@ cv.addEventListener('pointercancel',release);
 cv.addEventListener('lostpointercapture',release);
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 window.addEventListener('blur',()=>{G.held=null;G.pointerId=null;});
-$('#startBtn').addEventListener('click',startGame);
-$('#againBtn').addEventListener('click',startGame);
-$('#muteBtn').addEventListener('click',()=>{
-  muted=!muted;const b=$('#muteBtn');b.textContent=muted?'音效 關':'音效 開';b.setAttribute('aria-pressed',String(muted));
-});
-window.addEventListener('resize',layout);
+function updateMuteBtn(){const b=$('#muteBtn');b.textContent=muted?L.soundOff:L.soundOn;b.setAttribute('aria-pressed',String(muted));}
+function buildChant(){
+  const el=$('#syls');el.textContent='';el.classList.toggle('latin',!!L.latin);
+  sylEls=[];let word=null;
+  for(const c of L.chant){
+    // Latin text: keep each word's syllables together so lines only break between words
+    if(L.latin&&!word){word=document.createElement('span');word.className='w';el.append(word);}
+    const sp=document.createElement('span');sp.textContent=c;(word||el).append(sp);sylEls.push(sp);
+    if(word&&/\s$/.test(c))word=null;
+  }setSyls(mom.state==='back'?mom.syl:-1);
+}
+function applyLang(code,save){
+  if(!I18N[code])code='zh';
+  LANG=code;L=I18N[code];RANKS=L.ranks;SEVERITY=L.sev;
+  document.documentElement.lang=L.lang;document.title=L.name;
+  document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=L[el.dataset.t];});
+  document.querySelectorAll('.lang').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===code)));
+  cv.setAttribute('aria-label',L.stageAria);$('#mood').setAttribute('aria-label',L.mood);$('#portrait').setAttribute('aria-label',L.portraitAria);
+  buildChant();updateMuteBtn();setRank(rankOf(G.score),false);statusNow='';setStatus(statusKey());updateBest();
+  if(save){try{localStorage.setItem('pimple-lang',code);}catch(e){}}
+}
+document.querySelectorAll('.lang').forEach(b=>b.addEventListener('click',()=>applyLang(b.dataset.lang,true)));
+$('#startSound').addEventListener('click',()=>startGame(true));
+$('#startMuted').addEventListener('click',()=>startGame(false));
+$('#againBtn').addEventListener('click',()=>startGame());
+$('#muteBtn').addEventListener('click',()=>{muted=!muted;updateMuteBtn();});
+window.addEventListener('resize',()=>{layout();fitEnd();});
 if(window.ResizeObserver)new ResizeObserver(layout).observe(stage);
 
-layout();spawnStart();startChant();setRank(0,false);setStatus('menu');updateBest();
+applyLang(detectLang(),false);layout();spawnStart();startChant();setRank(0,false);setStatus('menu');updateBest();
 requestAnimationFrame(frame);
 })();
 </script>
