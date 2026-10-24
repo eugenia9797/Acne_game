@@ -19,9 +19,10 @@
 
 單一 `index.html`，不需要建置步驟。畫面用 Canvas 繪製，音樂和音效用 Web Audio API 即時合成，字型來自 Google Fonts（Huninn、Kosugi Maru、Jua、Lilita One）。
 
-## 部署到 Cloudflare Pages
+## 網址與部署
 
-1. Cloudflare 後台 → Workers & Pages → 建立 → Pages → 連接到 Git。
-2. 選擇這個 repo。
-3. 建置設定：框架預設選「None」，建置指令留空，建置輸出目錄填 `/`。
-4. 儲存並部署。之後每次推到 `main` 分支都會自動重新部署。
+正式網址是 **https://esheen.skin/acne-game/**。
+
+- 正式版放在網站 repo [eugenia9797/follicle-school](https://github.com/eugenia9797/follicle-school) 的 `public/acne-game/index.html`，隨 esheen.skin 一起部署。
+- 這個 repo 保存遊戲原始碼與更新紀錄。更新遊戲時，把這裡的 `index.html` 複製到網站 repo 的 `public/acne-game/`，合併到 `main` 後就會上線。
+- 這個 repo 原本部署在 acne-game.pages.dev，現在由 `_redirects` 把所有網址 301 轉到正式網址。
