@@ -24,6 +24,6 @@
 
 正式網址是 **https://esheen.skin/acne-game/**。
 
-- 正式版放在網站 repo [eugenia9797/follicle-school](https://github.com/eugenia9797/follicle-school) 的 `public/acne-game/index.html`，隨 esheen.skin 一起部署。
-- 這個 repo 保存遊戲原始碼與更新紀錄。更新遊戲時，把這裡的 `index.html` 複製到網站 repo 的 `public/acne-game/`，合併到 `main` 後就會上線。
-- 這個 repo 原本部署在 acne-game.pages.dev，現在由 `_redirects` 把所有網址 301 轉到正式網址。
+- 這個 repo 就是正式版：推到 `main` 後，Cloudflare Pages 會部署到 acne-game.pages.dev，大約一分鐘內 esheen.skin/acne-game/ 就會是新版，不需要動網站 repo。
+- esheen.skin 那邊（[eugenia9797/follicle-school](https://github.com/eugenia9797/follicle-school)）用 `functions/acne-game/[[path]].js` 把 `/acne-game/` 的請求轉接到 acne-game.pages.dev，並在 Cloudflare 邊緣快取 60 秒。
+- 直接打開 acne-game.pages.dev 的玩家，會被頁面開頭的一小段程式導到 esheen.skin/acne-game/。轉接時不受影響，因為那段程式只在瀏覽器裡、網址是 acne-game.pages.dev 時才會執行。
