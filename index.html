@@ -165,10 +165,11 @@ body{
 .share-head h2{font-size:22px}
 .share-img{display:block;align-self:center;width:clamp(120px,calc((100vh - 300px)*.8),368px);width:clamp(120px,calc((100dvh - 300px)*.8),368px);max-width:100%;height:auto;aspect-ratio:4/5;object-fit:contain;border:3px solid var(--ink);border-radius:14px;background:var(--tile);-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
 .share-img.loading{background:repeating-linear-gradient(-45deg,var(--tile) 0 12px,var(--tile-line) 12px 24px)}
-.share-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.share-hint{margin:-2px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+.share-actions{display:flex;flex-wrap:wrap;gap:8px}
+.share-actions .sh{flex:1 1 0;min-width:96px;font-size:14px;padding:6px 10px}
 .sh{font:inherit;font-size:13px;display:flex;align-items:center;justify-content:center;min-height:40px;padding:4px 2px;border:2px solid var(--ink);border-radius:12px;color:#fff;text-decoration:none;cursor:pointer;text-align:center;line-height:1.15;box-shadow:0 2px 0 var(--ink)}
 .sh:active{transform:translateY(2px);box-shadow:none}
-.sh.fb{background:#1877f2}.sh.msg{background:#0a6cff}.sh.th{background:#151515}.sh.ig{background:#c92a75}.sh.line{background:#06a84c}
 .sh.plain{background:var(--paper);color:var(--ink)}
 .share-msg{margin:0;min-height:1.3em;font-size:13px;line-height:1.5;color:var(--mint-deep);-webkit-user-select:text;user-select:text;overflow-wrap:anywhere}
 .portrait{display:block;flex:none;width:200px;height:200px;align-self:center;border:3px solid var(--ink);border-radius:18px;background:var(--tile)}
@@ -273,15 +274,11 @@ body{
   <div class="card sharecard" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
     <div class="share-head"><h2 id="shareTitle" data-t="shareTitle">分享你的痘疤臉</h2><button id="shareClose" class="icon-btn" type="button" aria-label="關閉"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button></div>
     <img id="shareImg" class="share-img loading" alt="">
-    <div class="share-grid">
-      <a id="shFb" class="sh fb" href="#" target="_blank" rel="noopener">Facebook</a>
-      <a id="shMsg" class="sh msg" href="#" rel="noopener">Messenger</a>
-      <a id="shThreads" class="sh th" href="#" target="_blank" rel="noopener">Threads</a>
-      <button id="shIg" class="sh ig" type="button">Instagram</button>
-      <a id="shLine" class="sh line" href="#" target="_blank" rel="noopener">LINE</a>
+    <p class="share-hint" data-t="longPress">長按圖片可以存到手機</p>
+    <div class="share-actions">
       <button id="shSave" class="sh plain" type="button" data-t="save">儲存圖片</button>
-      <button id="shCopy" class="sh plain" type="button" data-t="copy">複製連結</button>
-      <button id="shMore" class="sh plain" type="button" data-t="more" hidden>更多</button>
+      <button id="shCopy" class="sh plain" type="button" data-t="copyText">複製文字和連結</button>
+      <button id="shMore" class="sh plain" type="button" data-t="shareLink" hidden>分享連結</button>
     </div>
     <p class="share-msg" id="shareMsg" aria-live="polite"></p>
   </div>
@@ -307,7 +304,7 @@ const I18N={
     tGiant:'超大膿痘出現！快擠！',giantPop:'噗啾！',boom:'爆炸！',
     pop:'啵！',sprout:'冒出來了',scar:'留疤',step:'叩！',
     sayCaught:'不是叫你別擠嗎！',sayFull:'整臉都是痘痘了！',nurseSay:'醫師！他在擠痘痘！',
-    eyebrow:'遊戲結束',share:'分享',shareTitle:'分享你的痘疤臉',close:'關閉',save:'儲存圖片',copy:'複製連結',copied:'已複製連結',more:'更多',
+    eyebrow:'遊戲結束',share:'分享',shareTitle:'分享你的痘疤臉',close:'關閉',save:'儲存圖片',copy:'複製連結',copied:'已複製，可以貼到任何地方',more:'更多',copyText:'複製文字和連結',shareLink:'分享連結',longPress:'長按圖片可以存到手機',
     shareText:(s,r)=>'我在「擠痘木頭人」拿到 '+s+' 分，稱號是「'+r+'」！換你來挑戰：',cardCta:'換你來挑戰 →',cardTagline:'趁醫師背對你時偷偷擠痘痘',
     saveTip:'如果沒有自動下載，長按圖片就能存到手機。',igTip:'Instagram 不支援從網頁直接分享：長按圖片存到手機，再到 Instagram 發限動或貼文。',msgTip:'Messenger 要在手機上分享。連結已複製，也可以直接貼上。',
     endNurse:'被護理師告密了！',endFull:'不開心爆表，出局！',endEarly:'才剛開始就被抓！',endDoc:'被醫師抓包了！',endPro:'擠痘高手，還是被抓',
@@ -333,7 +330,7 @@ const I18N={
     tGiant:'Giant zit! Pop it before it blows!',giantPop:'SPLAT! ',boom:'BOOM! ',
     pop:'Pop! ',sprout:'New zit!',scar:'Scar',step:'Clack!',
     sayCaught:'I said no squeezing!',sayFull:'Your face is all zits!',nurseSay:"Doctor! He's popping zits!",
-    eyebrow:'Game over',share:'Share',shareTitle:'Share your scar face',close:'Close',save:'Save image',copy:'Copy link',copied:'Link copied',more:'More',
+    eyebrow:'Game over',share:'Share',shareTitle:'Share your scar face',close:'Close',save:'Save image',copy:'Copy link',copied:'Copied. Paste it anywhere.',more:'More',copyText:'Copy text & link',shareLink:'Share link',longPress:'Long-press the image to save it',
     shareText:(s,r)=>'I scored '+s+' in Zit Freeze and earned the title "'+r+'". Your turn:',cardCta:'Your turn →',cardTagline:"Squeeze zits while the doctor isn't looking",
     saveTip:'If nothing downloads, long-press the image to save it.',igTip:"Instagram doesn't take shares from websites. Long-press the image to save it, then post it to your story or feed.",msgTip:'Messenger sharing works on phones. The link is copied, so you can paste it.',
     endNurse:'The nurse told on you!',endFull:'Too grumpy. Game over!',endEarly:'Caught right away!',endDoc:'Busted by the doctor!',endPro:'Zit pro, still busted',
@@ -359,7 +356,7 @@ const I18N={
     tGiant:'巨大ニキビ出現！早くつぶして！',giantPop:'ブシャッ！',boom:'バクハツ！',
     pop:'プチッ！',sprout:'できた！',scar:'跡が残った',step:'コツッ！',
     sayCaught:'つぶさないでって言ったでしょ！',sayFull:'顔中ニキビだらけ！',nurseSay:'先生！ニキビつぶしてます！',
-    eyebrow:'ゲームオーバー',share:'シェア',shareTitle:'ニキビ跡顔をシェア',close:'閉じる',save:'画像を保存',copy:'リンクをコピー',copied:'コピーしました',more:'その他',
+    eyebrow:'ゲームオーバー',share:'シェア',shareTitle:'ニキビ跡顔をシェア',close:'閉じる',save:'画像を保存',copy:'リンクをコピー',copied:'コピーしました。どこにでも貼り付けられます',more:'その他',copyText:'テキストとリンクをコピー',shareLink:'リンクをシェア',longPress:'画像を長押しすると保存できます',
     shareText:(s,r)=>'「ニキビがころんだ」で'+s+'点、称号は「'+r+'」！挑戦してみて：',cardCta:'挑戦してみて →',cardTagline:'先生が見ていないすきにニキビをつぶせ',
     saveTip:'保存されない場合は、画像を長押しして保存してね。',igTip:'Instagramはウェブから直接シェアできません。画像を長押しして保存し、ストーリーや投稿でシェアしてね。',msgTip:'Messengerへのシェアはスマホから。リンクをコピーしたので貼り付けてね。',
     endNurse:'看護師に告げ口された！',endFull:'不機嫌MAXでアウト！',endEarly:'始まってすぐバレた！',endDoc:'先生にバレた！',endPro:'つぶしの達人も、ついにバレた',
@@ -385,7 +382,7 @@ const I18N={
     tGiant:'왕여드름 등장! 빨리 짜!',giantPop:'푸슉! ',boom:'펑! ',
     pop:'톡! ',sprout:'또 났다!',scar:'흉터',step:'또각!',
     sayCaught:'짜지 말라고 했지!',sayFull:'얼굴이 여드름투성이야!',nurseSay:'선생님! 여드름 짜고 있어요!',
-    eyebrow:'게임 오버',share:'공유',shareTitle:'흉터 얼굴 공유하기',close:'닫기',save:'이미지 저장',copy:'링크 복사',copied:'복사했어요',more:'더보기',
+    eyebrow:'게임 오버',share:'공유',shareTitle:'흉터 얼굴 공유하기',close:'닫기',save:'이미지 저장',copy:'링크 복사',copied:'복사했어요. 어디든 붙여 넣을 수 있어요',more:'더보기',copyText:'문구와 링크 복사',shareLink:'링크 공유',longPress:'이미지를 길게 누르면 저장할 수 있어요',
     shareText:(s,r)=>"'여드름 꽃이 피었습니다'에서 "+s+"점, 칭호는 '"+r+"'! 너도 도전해 봐:",cardCta:'도전해 봐 →',cardTagline:'선생님이 안 볼 때 몰래 여드름 짜기',
     saveTip:'저장되지 않으면 이미지를 길게 눌러 저장해 주세요.',igTip:'인스타그램은 웹에서 바로 공유할 수 없어요. 이미지를 길게 눌러 저장한 뒤 스토리나 게시물로 올려 주세요.',msgTip:'메신저 공유는 휴대폰에서 돼요. 링크를 복사했으니 붙여 넣어 주세요.',
     endNurse:'간호사가 일러바쳤다!',endFull:'기분 폭발, 아웃!',endEarly:'시작하자마자 들켰다!',endDoc:'선생님한테 들켰다!',endPro:'여드름 고수도 결국 들켰다',
@@ -1554,8 +1551,8 @@ function showEnd(){
   endCombo(true);
   const rk=rankOf(G.score);$('#endRank').textContent=RANKS[rk];$('#endSev').textContent=SEVERITY[Math.min(5,Math.floor(rk/5))];
   const eb=$('#endBadge');eb.textContent='';const bc=$('#rankBadge').cloneNode(true);bc.removeAttribute('id');eb.append(bc);
-  G.endScore=G.score;G.endRank=rk;G.endScars=genScars(rk);shareFile=null;
-  $('#endScreen').hidden=false;updateBest();renderPortrait(rk,G.endScars);fitEnd();
+  G.endScore=G.score;G.endRank=rk;G.endScars=genScars(rk);
+  $('#endScreen').hidden=false;updateBest();renderPortrait(rk,G.endScars);fitEnd();prepareShare();
   setStatus('menu');
   try{$('#againBtn').focus({preventScroll:true});}catch(e){}
 }
@@ -1609,7 +1606,7 @@ function applyLang(code,save){
   document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=L[el.dataset.t];});
   document.querySelectorAll('.lang').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===code)));
   $('#langCode').textContent=L.code;
-  shareFile=null;$('#shareClose').setAttribute('aria-label',L.close);
+  $('#shareClose').setAttribute('aria-label',L.close);
   for(const [id,key] of [['#langBtn','aLang'],['#quitBtn','aQuit']]){const b=$(id);b.setAttribute('aria-label',L[key]);b.title=L[key];}
   cv.setAttribute('aria-label',L.stageAria);$('#mood').setAttribute('aria-label',L.mood);$('#portrait').setAttribute('aria-label',L.portraitAria);
   buildChant();updateMuteBtn();setRank(rankOf(G.score),false);statusNow='';setStatus(statusKey());updateBest();
@@ -1695,54 +1692,55 @@ async function makeShareCard(w,h,res){
 }
 function rrOn(x,a,b,w,h,r){x.beginPath();if(x.roundRect){x.roundRect(a,b,w,h,r);return;}x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
 function shareMsg(t){$('#shareMsg').textContent=t||'';}
-function shareTextNow(){return L.shareText(G.endScore||0,RANKS[G.endRank||0]);}
-function setShareLinks(){
-  const text=shareTextNow(),u=encodeURIComponent(SHARE_URL);
-  $('#shFb').href='https://www.facebook.com/sharer/sharer.php?u='+u;
-  $('#shThreads').href='https://www.threads.com/intent/post?text='+encodeURIComponent(text+' '+SHARE_URL);
-  $('#shLine').href='https://social-plugins.line.me/lineit/share?url='+u+'&text='+encodeURIComponent(text);
-  $('#shMsg').href=IS_MOBILE?'fb-messenger://share/?link='+u:'#';$('#shMsg').target=IS_MOBILE?'_self':'';
-  $('#shMore').hidden=!navigator.share;
-}
-async function openShare(){
-  shareMsg('');setShareLinks();
-  $('#shareScreen').hidden=false;
-  const img=$('#shareImg');
-  if(!shareFile){
-    img.removeAttribute('src');img.classList.add('loading');
-    const c=await makeShareCard(1080,1350,{score:G.endScore,rank:G.endRank,scars:G.endScars});
+function shareTextNow(){return L.shareText(G.endScore||0,RANKS[G.endRank||0])+' '+SHARE_URL;}
+// build the score image as soon as the result screen shows, so the tap can open the share sheet right away
+let sharePrep=null;
+function prepareShare(){
+  shareFile=null;
+  const want={score:G.endScore,rank:G.endRank,scars:G.endScars};
+  sharePrep=(async()=>{
+    const c=await makeShareCard(1080,1350,want);
     const blob=await new Promise(r=>c.toBlob(r,'image/png'));
     if(shareImgUrl)URL.revokeObjectURL(shareImgUrl);
     shareImgUrl=URL.createObjectURL(blob);
     try{shareFile=new File([blob],'acne-game-score.png',{type:'image/png'});}catch(e){shareFile=null;}
-    img.src=shareImgUrl;img.classList.remove('loading');
-  }
+    $('#shareImg').src=shareImgUrl;$('#shareImg').classList.remove('loading');
+  })();
+  return sharePrep;
+}
+const canShareFile=()=>!!(shareFile&&navigator.share&&navigator.canShare&&navigator.canShare({files:[shareFile]}));
+async function nativeShare(){
+  try{await navigator.share({files:[shareFile],text:shareTextNow()});return true;}
+  catch(e){return e&&e.name==='AbortError';}
+}
+async function onShareTap(){
+  if(canShareFile()){if(await nativeShare())return;}
+  else if(sharePrep&&!shareFile){await sharePrep;if(canShareFile()&&await nativeShare())return;}
+  openSharePanel();
+}
+function openSharePanel(){
+  shareMsg('');$('#shMore').hidden=!navigator.share;
+  if(!shareImgUrl)$('#shareImg').classList.add('loading');
+  $('#shareScreen').hidden=false;
   try{$('#shareClose').focus({preventScroll:true});}catch(e){}
 }
 function closeShare(){$('#shareScreen').hidden=true;}
-const canShareFile=()=>!!(shareFile&&navigator.canShare&&navigator.canShare({files:[shareFile]}));
-async function shareImageFile(){
-  if(!canShareFile())return false;
-  try{await navigator.share({files:[shareFile]});return true;}catch(e){return e&&e.name==='AbortError';}
+async function copyShareText(){
+  const t=shareTextNow();
+  try{await navigator.clipboard.writeText(t);shareMsg(L.copied);}
+  catch(e){shareMsg(t);const r=document.createRange();r.selectNodeContents($('#shareMsg'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}
 }
-async function copyLink(){
-  try{await navigator.clipboard.writeText(SHARE_URL);shareMsg(L.copied);return true;}
-  catch(e){shareMsg(SHARE_URL);const r=document.createRange();r.selectNodeContents($('#shareMsg'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);return false;}
-}
-$('#shareBtn').addEventListener('click',openShare);
+$('#shareBtn').addEventListener('click',onShareTap);
 $('#shareClose').addEventListener('click',closeShare);
 $('#shareScreen').addEventListener('click',e=>{if(e.target===$('#shareScreen'))closeShare();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#shareScreen').hidden)closeShare();});
-$('#shMsg').addEventListener('click',e=>{if(!IS_MOBILE){e.preventDefault();copyLink().then(()=>shareMsg(L.msgTip));}});
-$('#shIg').addEventListener('click',async()=>{if(!(await shareImageFile()))shareMsg(L.igTip);});
 $('#shSave').addEventListener('click',async()=>{
-  if(await shareImageFile())return;
+  if(canShareFile()&&await nativeShare())return;
   if(shareImgUrl){const a=document.createElement('a');a.href=shareImgUrl;a.download='acne-game-score.png';document.body.append(a);a.click();a.remove();}
   shareMsg(L.saveTip);
 });
-$('#shCopy').addEventListener('click',copyLink);
-$('#shMore').addEventListener('click',async()=>{try{await navigator.share({title:L.name,text:shareTextNow(),url:SHARE_URL});}catch(e){}});
-
+$('#shCopy').addEventListener('click',copyShareText);
+$('#shMore').addEventListener('click',async()=>{try{await navigator.share({title:L.name,text:shareTextNow()});}catch(e){}});
 applyLang(detectLang(),false);layout();spawnStart();startChant();setRank(0,false);setStatus('menu');updateBest();
 requestAnimationFrame(frame);
 })();
