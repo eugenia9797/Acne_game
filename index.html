@@ -588,7 +588,7 @@ function musicPause(){music.phrase=null;}
 function musicReset(){music.phrase=null;music.startedAt=nowS();musicDuck(false);}
 
 /* ---------- 痘疤 ranks: one every 50 points ---------- */
-const rankOf=s=>Math.min(RANKS.length-1,Math.floor(s/200));
+const rankOf=s=>Math.min(RANKS.length-1,Math.floor(s/100));
 
 /* ---------- layout & drawing helpers ---------- */
 const FONT='"Huninn","Kosugi Maru","Jua","jf open 粉圓","PingFang TC","Noto Sans TC","Hiragino Maru Gothic ProN","Apple SD Gothic Neo","Microsoft JhengHei",sans-serif';
