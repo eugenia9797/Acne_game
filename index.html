@@ -190,7 +190,7 @@ body{
     </div>
   </div>
   <main class="stage" id="stage">
-    <canvas id="cv" aria-label="遊戲畫面：連續點擊痘痘來擠"></canvas>
+    <canvas id="cv" aria-label="遊戲畫面：按住臉上的痘痘來擠"></canvas>
     <div class="mood" id="mood" data-mood="happy" role="meter" aria-label="不開心" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0">
       <svg class="mood-face" id="moodFace" viewBox="0 0 36 36" aria-hidden="true">
         <circle class="mf-skin" cx="18" cy="18" r="15.5"/>
@@ -251,12 +251,12 @@ const I18N={
     chant:['被','我','抓','到','你','在','擠','痘','痘','你','就','完','蛋','了'],
     code:'中',aSoundOn:'音效：開（點一下關閉）',aSoundOff:'音效：關（點一下開啟）',aLang:'切換語言',aQuit:'結束遊戲',
     score:'分數',best:'最佳',soundOn:'音效 開',soundOff:'音效 關',mood:'不開心',
-    stageAria:'遊戲畫面：連續點擊痘痘來擠',portraitAria:'你的痘疤臉',
+    stageAria:'遊戲畫面：按住臉上的痘痘來擠',portraitAria:'你的痘疤臉',
     hint:'開音效更好玩！要聽音樂，才知道醫師什麼時候回頭。',playSound:'開音效開始',playMuted:'靜音開始',
     bestLine:n=>'最佳紀錄 '+n+' 分',
     status:{menu:'醫師在打病歷',back:'背對中・快擠',warn:'要回頭了！',tease:'嗯…？',look:'她在看！別動',caught:'被抓包了',
       steps:'有腳步聲！',steps2:'兩個腳步聲！',nurse:'護理師在看！',nurseCaught:'被護理師抓包',full:'不開心爆表'},
-    tStart:'狂點痘痘，唱完就停手！',tCaught:'被看到了！',tNurse:'被護理師看到了！',tFull:'不開心爆表！',tClear:'整臉清空 +30',levelUp:'升級！',
+    tStart:'跟著音樂擠，唱完就放手',tCaught:'被看到了！',tNurse:'被護理師看到了！',tFull:'不開心爆表！',tClear:'整臉清空 +30',levelUp:'升級！',
     tGiant:'超大膿痘出現！快擠！',giantPop:'噗啾！',boom:'爆炸！',
     pop:'啵！',sprout:'冒出來了',scar:'留疤',step:'叩！',
     sayCaught:'不是叫你別擠嗎！',sayFull:'整臉都是痘痘了！',nurseSay:'醫師！他在擠痘痘！',
@@ -275,12 +275,12 @@ const I18N={
     chant:['If ','I ','catch ','you ','pop','ping ','a','ny ','zits, ',"you'll ",'be ','in ','trou','ble!'],
     code:'EN',aSoundOn:'Sound is on (tap to mute)',aSoundOff:'Sound is off (tap to unmute)',aLang:'Change language',aQuit:'End game',
     score:'Score',best:'Best',soundOn:'Sound on',soundOff:'Sound off',mood:'Grumpy',
-    stageAria:'Game screen: tap a pimple repeatedly to squeeze it',portraitAria:'Your scar face',
+    stageAria:'Game screen: press and hold a pimple to squeeze it',portraitAria:'Your scar face',
     hint:'Sound on is way more fun! The music tells you when the doctor will turn around.',playSound:'Play with sound',playMuted:'Play muted',
     bestLine:n=>'Best: '+n,
     status:{menu:'Doctor is charting',back:'Squeeze now!',warn:'Turning!',tease:'Hm…?',look:"She's looking!",caught:'Busted!',
       steps:'Footsteps!',steps2:'Two sets of steps!',nurse:'Nurse is watching!',nurseCaught:'Nurse busted you',full:'Too grumpy!'},
-    tStart:'Tap zits to squeeze. Stop when the music ends!',tCaught:'Spotted!',tNurse:'The nurse saw you!',tFull:'Too grumpy!',tClear:'Face cleared +30',levelUp:'Level up! ',
+    tStart:'Squeeze to the music. Let go when it ends!',tCaught:'Spotted!',tNurse:'The nurse saw you!',tFull:'Too grumpy!',tClear:'Face cleared +30',levelUp:'Level up! ',
     tGiant:'Giant zit! Pop it before it blows!',giantPop:'SPLAT! ',boom:'BOOM! ',
     pop:'Pop! ',sprout:'New zit!',scar:'Scar',step:'Clack!',
     sayCaught:'I said no squeezing!',sayFull:'Your face is all zits!',nurseSay:"Doctor! He's popping zits!",
@@ -299,12 +299,12 @@ const I18N={
     chant:['ニ','キ','ビ','を','つ','ぶ','し','た','ら','お','し','ま','い','よ'],
     code:'日',aSoundOn:'音：ON（タップでOFF）',aSoundOff:'音：OFF（タップでON）',aLang:'言語を切り替え',aQuit:'ゲームを終了',
     score:'スコア',best:'ベスト',soundOn:'音 ON',soundOff:'音 OFF',mood:'不機嫌',
-    stageAria:'ゲーム画面：ニキビを連打してつぶす',portraitAria:'あなたのニキビ跡顔',
+    stageAria:'ゲーム画面：ニキビを長押ししてつぶす',portraitAria:'あなたのニキビ跡顔',
     hint:'音ありがおすすめ！音楽を聞けば、先生が振り向くタイミングがわかるよ。',playSound:'音ありで遊ぶ',playMuted:'音なしで遊ぶ',
     bestLine:n=>'ベスト '+n+'点',
     status:{menu:'カルテ入力中',back:'背中向き・今だ！',warn:'振り向くよ！',tease:'ん…？',look:'見てる！動かないで',caught:'バレた',
       steps:'足音がする！',steps2:'足音がふたつ！',nurse:'看護師が見てる！',nurseCaught:'看護師にバレた',full:'不機嫌MAX'},
-    tStart:'ニキビを連打してつぶそう。音楽が終わったら手を止めて！',tCaught:'見つかった！',tNurse:'看護師に見られた！',tFull:'不機嫌MAX！',tClear:'全部つぶした +30',levelUp:'レベルアップ！',
+    tStart:'音楽に合わせてつぶして、終わったら手を離して！',tCaught:'見つかった！',tNurse:'看護師に見られた！',tFull:'不機嫌MAX！',tClear:'全部つぶした +30',levelUp:'レベルアップ！',
     tGiant:'巨大ニキビ出現！早くつぶして！',giantPop:'ブシャッ！',boom:'バクハツ！',
     pop:'プチッ！',sprout:'できた！',scar:'跡が残った',step:'コツッ！',
     sayCaught:'つぶさないでって言ったでしょ！',sayFull:'顔中ニキビだらけ！',nurseSay:'先生！ニキビつぶしてます！',
@@ -323,12 +323,12 @@ const I18N={
     chant:['여','드','름','을','짜','다','걸','리','면','너','큰','일','난','다'],
     code:'한',aSoundOn:'소리 켬 (눌러서 끄기)',aSoundOff:'소리 끔 (눌러서 켜기)',aLang:'언어 변경',aQuit:'게임 종료',
     score:'점수',best:'최고',soundOn:'소리 켬',soundOff:'소리 끔',mood:'짜증',
-    stageAria:'게임 화면: 여드름을 연타해서 짜기',portraitAria:'나의 흉터 얼굴',
+    stageAria:'게임 화면: 여드름을 길게 눌러서 짜기',portraitAria:'나의 흉터 얼굴',
     hint:'소리를 켜면 더 재밌어요! 음악을 들어야 선생님이 언제 돌아볼지 알 수 있어요.',playSound:'소리 켜고 시작',playMuted:'소리 끄고 시작',
     bestLine:n=>'최고 기록 '+n+'점',
     status:{menu:'차트 작성 중',back:'뒤돌았다・지금 짜!',warn:'돌아본다!',tease:'음…?',look:'보고 있어! 멈춰',caught:'들켰다',
       steps:'발소리!',steps2:'발소리 두 개!',nurse:'간호사가 보고 있어!',nurseCaught:'간호사한테 들켰다',full:'기분 최악'},
-    tStart:'여드름을 연타해서 짜고, 음악이 끝나면 멈춰!',tCaught:'들켰다!',tNurse:'간호사한테 들켰다!',tFull:'기분 폭발!',tClear:'얼굴 클리어 +30',levelUp:'레벨 업! ',
+    tStart:'음악에 맞춰 짜고, 노래가 끝나면 손을 떼!',tCaught:'들켰다!',tNurse:'간호사한테 들켰다!',tFull:'기분 폭발!',tClear:'얼굴 클리어 +30',levelUp:'레벨 업! ',
     tGiant:'왕여드름 등장! 빨리 짜!',giantPop:'푸슉! ',boom:'펑! ',
     pop:'톡! ',sprout:'또 났다!',scar:'흉터',step:'또각!',
     sayCaught:'짜지 말라고 했지!',sayFull:'얼굴이 여드름투성이야!',nurseSay:'선생님! 여드름 짜고 있어요!',
@@ -369,10 +369,10 @@ const C={
 };
 
 const TYPES={
-  white:{name:'白頭粉刺',taps:3,pts:10,r:[7,9.5]},
-  pus:{name:'膿皰',taps:5,pts:25,r:[10,13.5]},
-  black:{name:'黑頭粉刺',taps:2,pts:5,r:[5,6.5]},
-  giant:{name:'超大膿痘',taps:12,pts:80,r:[18,21]}
+  white:{name:'白頭粉刺',hold:.55,pts:10,r:[7,9.5]},
+  pus:{name:'膿皰',hold:1.0,pts:25,r:[10,13.5]},
+  black:{name:'黑頭粉刺',hold:.35,pts:5,r:[5,6.5]},
+  giant:{name:'超大膿痘',hold:1.8,pts:80,r:[18,21]}
 };
 
 let W=0,H=0,DPR=1;
@@ -719,7 +719,7 @@ function speechBubble(txt,cx,tipY,size,tipX){
 }
 
 /* ---------- pimples, fingers, effects ---------- */
-function pimpleRadius(p){const g=p.born?Math.min(1,(G.clock-p.born)/.3):1;return p.r*1.2*face.k*(1+.35*p.q)*p.swell*(.25+.75*g)*(1+.16*(p.squish||0));}
+function pimpleRadius(p){const g=p.born?Math.min(1,(G.clock-p.born)/.3):1;return p.r*1.2*face.k*(1+.35*p.q)*p.swell*(.25+.75*g);}
 function drawPimple(p){
   if(p.type==='giant'){ctx.save();drawGiant(p);ctx.restore();return;}
   const T=TYPES[p.type], held=G.held===p;
@@ -748,7 +748,7 @@ function drawPimple(p){
 }
 function drawFingers(p){
   const x=fx(p.u), y=fy(p.v), r=pimpleRadius(p), k=face.k;
-  const gap=r*(2.3-1.15*p.q-.7*(p.squish||0))+5*k, w=24*k, L=96*k;
+  const gap=r*(2.3-1.15*p.q)+5*k, w=24*k, L=96*k;
   for(const side of [-1,1]){
     ctx.save();ctx.translate(x+side*gap,y+r*.2);ctx.rotate(Math.atan2(.75,side));
     ctx.fillStyle=C.finger;ctx.strokeStyle=C.ink;ctx.lineWidth=3*k;
@@ -1132,23 +1132,13 @@ function popPimple(p){
   updateCount();
   if(!G.pimples.some(o=>!TYPES[o.type].trap))faceCleared();
 }
-const HAND_LINGER=.3;
-const handOnFace=()=>G.clock<G.touchUntil;
-sfx.squish=q=>{tone(260+q*420,.07,'sine',.16,-140);noise(.04,.05,2400);};
-function tapPimple(p){
-  const T=TYPES[p.type],k=face.k;
-  G.held=p;G.touchUntil=G.clock+HAND_LINGER;
-  p.q=Math.min(1,p.q+1/T.taps);p.squish=1;
-  if(p.q>=1){popPimple(p);return;}
-  sfx.squish(p.q);
-  if(p.type!=='black'&&p.q>.45){
-    const x=fx(p.u),y=fy(p.v),a=-Math.PI/2+rand(-.8,.8),sp=rand(60,140)*k;
-    G.parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:rand(1.5,2.6)*k,life:.4,max:.4,color:p.type==='white'?C.whiteHead:C.pus,kind:'drop'});
-  }
-}
 function updatePimples(dt){
-  for(const p of G.pimples)if(p.squish>0)p.squish=Math.max(0,p.squish-dt*6);
-  if(G.held&&!handOnFace())G.held=null;
+  const p=G.held;
+  if(!p)return;
+  const T=TYPES[p.type],prev=p.q;
+  p.q+=dt/T.hold;
+  if(Math.floor(prev*4)!==Math.floor(p.q*4)&&p.q<1)sfx.tick();
+  if(p.q>=1)popPimple(p);
 }
 
 /* ---------- doctor: 被我抓到你在擠痘痘你就完蛋了 ---------- */
@@ -1271,7 +1261,7 @@ function updateMom(dt){
     mom.look=Math.min(1,mom.look+dt/.15);
     if(mom.look>=1){
       mom.state='facing';mom.t=0;mom.faceDur=rand(.6,1.1)+(G.phrases>=12?rand(0,.4):0);
-      if(playing()&&handOnFace())caught();
+      if(playing()&&G.held)caught();
     }
   }else if(mom.state==='facing'){
     if(G.mode!=='ending'&&mom.t>=mom.faceDur&&mom.angry<=0)mom.state='turnBack';
@@ -1469,8 +1459,8 @@ function frame(now){
     G.clock+=dt;
     updateMom(dt);updateNurse(dt);
     if(G.mode==='play'){
-      if(handOnFace()&&mom.state==='facing')caught();
-      else if(handOnFace()&&nurseWatching())caught('nurse');
+      if(G.held&&mom.state==='facing')caught();
+      else if(G.held&&nurseWatching())caught('nurse');
       if(playing()){updatePimples(dt);updateGiants(dt);refill(dt);}
     }else if(G.mode==='ending'&&G.clock>=G.endAt){showEnd();}
     updateFx(dt);updateExpr(dt);syncStatusNow();
@@ -1483,7 +1473,7 @@ function frame(now){
 function startGame(sound){
   if(typeof sound==='boolean'){muted=!sound;updateMuteBtn();}
   ac();
-  G.mode='play';G.score=0;G.phrases=0;G.goo=[];endCombo(true);G.maxCombo=0;G.startClock=G.clock;G.marks=[];G.scars=[];G.caughtBy=null;resetNurses();G.ducked=false;G.parts=[];G.texts=[];G.held=null;G.touchUntil=0;G.refillT=0;G.exprT=0;
+  G.mode='play';G.score=0;G.phrases=0;G.goo=[];endCombo(true);G.maxCombo=0;G.startClock=G.clock;G.marks=[];G.scars=[];G.caughtBy=null;resetNurses();G.ducked=false;G.parts=[];G.texts=[];G.held=null;G.pointerId=null;G.refillT=0;G.exprT=0;
   $('#score').textContent='0';
   musicReset();setRank(0,false);
   mom.speed=undefined;spawnStart();startChant();
@@ -1515,19 +1505,23 @@ function showEnd(){
 }
 
 /* ---------- input ---------- */
-// every tap on a pimple squeezes it once (two thumbs work too)
 cv.addEventListener('pointerdown',e=>{
   ac();
-  if(!playing())return;
+  if(!playing()||G.held)return;
   const r=cv.getBoundingClientRect(),p=pick(e.clientX-r.left,e.clientY-r.top);
   if(!p)return;
   e.preventDefault();
-  if(mom.state==='facing'||mom.look>.5){G.held=p;G.touchUntil=G.clock+HAND_LINGER;caught();return;}
-  if(nurseWatching()){G.held=p;G.touchUntil=G.clock+HAND_LINGER;caught('nurse');return;}
-  tapPimple(p);
+  try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  G.pointerId=e.pointerId;G.held=p;
+  if(mom.state==='facing'||mom.look>.5)caught();
+  else if(nurseWatching())caught('nurse');
 });
+const release=e=>{if(e.pointerId===G.pointerId){G.held=null;G.pointerId=null;}};
+cv.addEventListener('pointerup',release);
+cv.addEventListener('pointercancel',release);
+cv.addEventListener('lostpointercapture',release);
 cv.addEventListener('contextmenu',e=>e.preventDefault());
-cv.addEventListener('dblclick',e=>e.preventDefault());
+window.addEventListener('blur',()=>{G.held=null;G.pointerId=null;});
 function updateMuteBtn(){
   const b=$('#muteBtn'),lab=muted?L.aSoundOff:L.aSoundOn;
   b.classList.toggle('muted',muted);b.setAttribute('aria-pressed',String(muted));b.setAttribute('aria-label',lab);b.title=lab;
@@ -1535,7 +1529,7 @@ function updateMuteBtn(){
 function openLangMenu(open){$('#langMenu').hidden=!open;$('#langBtn').setAttribute('aria-expanded',String(open));}
 // back to the start screen: language + sound choice, with the doctor idling behind it
 function goHome(){
-  G.mode='menu';G.held=null;G.touchUntil=0;endCombo(true);resetNurses();G.ducked=false;musicPause();musicDuck(false);
+  G.mode='menu';G.held=null;G.pointerId=null;endCombo(true);resetNurses();G.ducked=false;musicPause();musicDuck(false);
   G.score=0;$('#score').textContent='0';G.goo=[];G.texts=[];G.parts=[];G.marks=[];G.scars=[];G.expr='idle';G.exprT=0;G.shake=0;
   mom.angry=0;mom.caughtThis=false;mom.speed=undefined;
   spawnStart();startChant();setRank(0,false);statusNow='';setStatus('menu');updateBest();openLangMenu(false);
