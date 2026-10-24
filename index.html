@@ -1472,7 +1472,8 @@ function genScars(rank){
   }
   return out;
 }
-function renderPortrait(rank,scars,pc,scale){
+// draws a face snapshot {pimples, scars, marks, expr} into a square canvas
+function renderPortrait(snap,pc,scale){
   pc=pc||$('#portrait');scale=scale||2;const S=300;pc.width=S*scale;pc.height=S*scale;
   const keep={ctx,W,H,face:{...face},pimples:G.pimples,marks:G.marks,scars:G.scars,held:G.held,expr:G.expr};
   try{
@@ -1480,7 +1481,7 @@ function renderPortrait(rank,scars,pc,scale){
     ctx.fillStyle='#cfe6dd';ctx.fillRect(0,0,S,S);
     ctx.strokeStyle='#b7d6ca';ctx.lineWidth=2;for(let i=0;i<=S;i+=38){line(i,0,i,S);line(0,i,S,i);}
     face.rx=S*.32;face.ry=face.rx*1.18;face.k=face.rx/130;face.x=S/2;face.y=S*.56;
-    G.pimples=[];G.marks=[];G.scars=scars||genScars(rank);G.held=null;G.expr=rank>=10?'caught':'worry';
+    G.pimples=snap.pimples||[];G.marks=snap.marks||[];G.scars=snap.scars||[];G.held=null;G.expr=snap.expr||'caught';
     drawPlayer();
   }finally{
     ctx=keep.ctx;W=keep.W;H=keep.H;Object.assign(face,keep.face);
@@ -1551,8 +1552,9 @@ function showEnd(){
   endCombo(true);
   const rk=rankOf(G.score);$('#endRank').textContent=RANKS[rk];$('#endSev').textContent=SEVERITY[Math.min(5,Math.floor(rk/5))];
   const eb=$('#endBadge');eb.textContent='';const bc=$('#rankBadge').cloneNode(true);bc.removeAttribute('id');eb.append(bc);
-  G.endScore=G.score;G.endRank=rk;G.endScars=genScars(rk);
-  $('#endScreen').hidden=false;updateBest();renderPortrait(rk,G.endScars);fitEnd();prepareShare();
+  G.endScore=G.score;G.endRank=rk;
+  G.endSnap={pimples:G.pimples.map(p=>({...p})),scars:G.scars.map(x=>({...x})),marks:G.marks.map(m=>({...m})),expr:G.expr==='worry'?'worry':'caught'};
+  $('#endScreen').hidden=false;updateBest();renderPortrait(G.endSnap);fitEnd();prepareShare();
   setStatus('menu');
   try{$('#againBtn').focus({preventScroll:true});}catch(e){}
 }
@@ -1654,7 +1656,7 @@ async function makeShareCard(w,h,res){
   for(let i=0;i<=w;i+=gs){x.beginPath();x.moveTo(i,0);x.lineTo(i,h);x.stroke();}
   for(let j=0;j<=h;j+=gs){x.beginPath();x.moveTo(0,j);x.lineTo(w,j);x.stroke();}
   const rank=res?res.rank:12, P=document.createElement('canvas');
-  renderPortrait(rank,res?res.scars:genScars(rank),P,4);
+  renderPortrait(res?res.snap:{scars:genScars(rank),expr:'caught'},P,4);
   const frame=(px,py,ps)=>{
     x.fillStyle=C.ink;rrOn(x,px+12,py+14,ps,ps,ps*.07);x.fill();
     x.save();rrOn(x,px,py,ps,ps,ps*.07);x.clip();x.drawImage(P,px,py,ps,ps);x.restore();
@@ -1697,7 +1699,7 @@ function shareTextNow(){return L.shareText(G.endScore||0,RANKS[G.endRank||0])+' 
 let sharePrep=null;
 function prepareShare(){
   shareFile=null;
-  const want={score:G.endScore,rank:G.endRank,scars:G.endScars};
+  const want={score:G.endScore,rank:G.endRank,snap:G.endSnap};
   sharePrep=(async()=>{
     const c=await makeShareCard(1080,1350,want);
     const blob=await new Promise(r=>c.toBlob(r,'image/png'));
