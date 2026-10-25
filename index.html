@@ -262,7 +262,7 @@ body{
       <div class="big"><span id="endScore">0</span><small id="endUnit">分</small></div>
       <div class="endrank"><span id="endBadge"></span><div><span class="lab2" data-t="titleLab">你的稱號</span><b id="endRank">痘疤小屁孩</b><span class="sev" id="endSev">輕微痘疤</span></div></div>
     </div>
-    <div class="tip"><span data-t="tip">有痘痘或痘疤問題，記得找皮膚專科醫師評估與治療唷！</span><a class="tip-link" href="https://esheen.skin/conditions/acne/acne-vulgaris/" target="_blank" rel="noopener"><span data-t="tipLink">青春痘/痘疤問題點我看更多</span> →</a></div>
+    <div class="tip"><span data-t="tip">有痘痘或痘疤問題，記得找皮膚專科醫師評估與治療唷！</span><a class="tip-link" id="dermLink" href="https://esheen.skin/conditions/acne/acne-vulgaris/" target="_blank" rel="noopener"><span data-t="tipLink">青春痘/痘疤問題點我看更多</span> →</a></div>
     <div class="endbtns">
       <button class="btn share" id="shareBtn" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 13v6h14v-6"/></svg><span data-t="share">分享</span></button>
       <button class="btn" id="againBtn" type="button" data-t="again">再擠一次</button>
@@ -288,6 +288,7 @@ body{
 (function(){
 "use strict";
 const $=s=>document.querySelector(s);
+function track(name,params){try{if(typeof window.gtag==='function')window.gtag('event',name,params||{});}catch(e){}}
 /* ---------- languages: 中文 / English / 日本語 / 한국어 ---------- */
 const I18N={
   zh:{
@@ -1525,6 +1526,7 @@ function frame(now){
 /* ---------- start / end ---------- */
 function startGame(sound){
   if(typeof sound==='boolean'){muted=!sound;updateMuteBtn();}
+  track('game_start',{language:LANG,sound:muted?'off':'on',replay:typeof sound!=='boolean'});
   ac();
   G.mode='play';G.score=0;G.phrases=0;G.goo=[];endCombo(true);G.maxCombo=0;G.startClock=G.clock;G.marks=[];G.scars=[];G.caughtBy=null;resetNurses();G.ducked=false;G.parts=[];G.texts=[];G.held=null;G.pointerId=null;G.refillT=0;G.exprT=0;
   $('#score').textContent='0';
@@ -1546,6 +1548,7 @@ function fitEnd(){
 function showEnd(){
   G.mode='over';G.held=null;
   const isBest=G.score>best;if(isBest){best=G.score;saveBest();}
+  track('game_over',{score:G.score,rank_level:rankOf(G.score)+1,reason:G.caughtBy||'doctor',duration_sec:Math.round(G.lostAt-G.startClock),max_combo:G.maxCombo,new_best:isBest,language:LANG});
   musicPause();
   $('#endTitle').textContent=G.caughtBy==='nurse'?L.endNurse:G.caughtBy==='full'?L.endFull:G.score<40?L.endEarly:G.score<600?L.endDoc:L.endPro;
   $('#endScore').textContent=G.score;$('#endUnit').textContent=L.unit;
@@ -1612,13 +1615,14 @@ function applyLang(code,save){
   for(const [id,key] of [['#langBtn','aLang'],['#quitBtn','aQuit']]){const b=$(id);b.setAttribute('aria-label',L[key]);b.title=L[key];}
   cv.setAttribute('aria-label',L.stageAria);$('#mood').setAttribute('aria-label',L.mood);$('#portrait').setAttribute('aria-label',L.portraitAria);
   buildChant();updateMuteBtn();setRank(rankOf(G.score),false);statusNow='';setStatus(statusKey());updateBest();
-  if(save){try{localStorage.setItem('pimple-lang',code);}catch(e){}}
+  if(save){try{localStorage.setItem('pimple-lang',code);}catch(e){}track('language_change',{language:code});}
 }
 document.querySelectorAll('.lang').forEach(b=>b.addEventListener('click',()=>{applyLang(b.dataset.lang,true);openLangMenu(false);}));
 $('#langBtn').addEventListener('click',()=>openLangMenu($('#langMenu').hidden));
 document.addEventListener('pointerdown',e=>{if(!$('#langMenu').hidden&&!$('#langWrap').contains(e.target))openLangMenu(false);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')openLangMenu(false);});
-$('#quitBtn').addEventListener('click',goHome);
+$('#dermLink').addEventListener('click',()=>track('derm_link_click',{score:G.endScore,language:LANG}));
+$('#quitBtn').addEventListener('click',()=>{if(G.mode==='play')track('game_quit',{score:G.score,duration_sec:Math.round(G.clock-G.startClock)});goHome();});
 $('#startSound').addEventListener('click',()=>startGame(true));
 $('#startMuted').addEventListener('click',()=>startGame(false));
 $('#againBtn').addEventListener('click',goHome);
@@ -1716,8 +1720,9 @@ async function nativeShare(){
   catch(e){return e&&e.name==='AbortError';}
 }
 async function onShareTap(){
-  if(canShareFile()){if(await nativeShare())return;}
-  else if(sharePrep&&!shareFile){await sharePrep;if(canShareFile()&&await nativeShare())return;}
+  if(canShareFile()){if(await nativeShare()){track('share',{method:'native',score:G.endScore});return;}}
+  else if(sharePrep&&!shareFile){await sharePrep;if(canShareFile()&&await nativeShare()){track('share',{method:'native',score:G.endScore});return;}}
+  track('share',{method:'panel',score:G.endScore});
   openSharePanel();
 }
 function openSharePanel(){
@@ -1728,6 +1733,7 @@ function openSharePanel(){
 }
 function closeShare(){$('#shareScreen').hidden=true;}
 async function copyShareText(){
+  track('share_action',{action:'copy_text'});
   const t=shareTextNow();
   try{await navigator.clipboard.writeText(t);shareMsg(L.copied);}
   catch(e){shareMsg(t);const r=document.createRange();r.selectNodeContents($('#shareMsg'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}
@@ -1737,12 +1743,13 @@ $('#shareClose').addEventListener('click',closeShare);
 $('#shareScreen').addEventListener('click',e=>{if(e.target===$('#shareScreen'))closeShare();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#shareScreen').hidden)closeShare();});
 $('#shSave').addEventListener('click',async()=>{
+  track('share_action',{action:'save_image'});
   if(canShareFile()&&await nativeShare())return;
   if(shareImgUrl){const a=document.createElement('a');a.href=shareImgUrl;a.download='acne-game-score.png';document.body.append(a);a.click();a.remove();}
   shareMsg(L.saveTip);
 });
 $('#shCopy').addEventListener('click',copyShareText);
-$('#shMore').addEventListener('click',async()=>{try{await navigator.share({title:L.name,text:shareTextNow()});}catch(e){}});
+$('#shMore').addEventListener('click',async()=>{track('share_action',{action:'share_link'});try{await navigator.share({title:L.name,text:shareTextNow()});}catch(e){}});
 applyLang(detectLang(),false);layout();spawnStart();startChant();setRank(0,false);setStatus('menu');updateBest();
 requestAnimationFrame(frame);
 })();
