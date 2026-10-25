@@ -18,7 +18,7 @@
 
 ## 技術
 
-單一 `index.html`，不需要建置步驟。已裝 Google Analytics（GA4，評估 ID `G-FTBL57HWEV`），除了瀏覽量還會送出遊戲事件：`game_start`、`game_over`、`game_quit`、`share`、`share_action`、`language_change`、`derm_link_click`。畫面用 Canvas 繪製，音樂和音效用 Web Audio API 即時合成，字型來自 Google Fonts（Huninn、Kosugi Maru、Jua、Lilita One）。
+單一 `index.html`，不需要建置步驟。已裝 Google Analytics（GA4，評估 ID `G-FTBL57HWEV`），除了瀏覽量還會送出遊戲事件：`game_start`、`game_over`、`game_quit`、`share`、`share_action`、`language_change`、`derm_link_click`。分數畫面連到青春痘衛教頁的網址帶有 `?from=acne-game`，在衛教頁那邊也能算出從遊戲過來的人數。畫面用 Canvas 繪製，音樂和音效用 Web Audio API 即時合成，字型來自 Google Fonts（Huninn、Kosugi Maru、Jua、Lilita One）。
 
 ## 網址與部署
 

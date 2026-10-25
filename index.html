@@ -264,7 +264,7 @@ body{
       <div class="big"><span id="endScore">0</span><small id="endUnit">分</small></div>
       <div class="endrank"><span id="endBadge"></span><div><span class="lab2" data-t="titleLab">你的稱號</span><b id="endRank">痘疤小屁孩</b><span class="sev" id="endSev">輕微痘疤</span></div></div>
     </div>
-    <div class="tip"><span data-t="tip">有痘痘或痘疤問題，記得找皮膚專科醫師評估與治療唷！</span><a class="tip-link" id="dermLink" href="https://esheen.skin/conditions/acne/acne-vulgaris/" target="_blank" rel="noopener"><span data-t="tipLink">青春痘/痘疤問題點我看更多</span> →</a></div>
+    <div class="tip"><span data-t="tip">有痘痘或痘疤問題，記得找皮膚專科醫師評估與治療唷！</span><a class="tip-link" id="dermLink" href="https://esheen.skin/conditions/acne/acne-vulgaris/?from=acne-game" target="_blank" rel="noopener"><span data-t="tipLink">青春痘/痘疤問題點我看更多</span> →</a></div>
     <div class="endbtns">
       <button class="btn share" id="shareBtn" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 13v6h14v-6"/></svg><span data-t="share">分享</span></button>
       <button class="btn" id="againBtn" type="button" data-t="again">再擠一次</button>
@@ -1623,7 +1623,7 @@ document.querySelectorAll('.lang').forEach(b=>b.addEventListener('click',()=>{ap
 $('#langBtn').addEventListener('click',()=>openLangMenu($('#langMenu').hidden));
 document.addEventListener('pointerdown',e=>{if(!$('#langMenu').hidden&&!$('#langWrap').contains(e.target))openLangMenu(false);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')openLangMenu(false);});
-$('#dermLink').addEventListener('click',()=>track('derm_link_click',{score:G.endScore,language:LANG}));
+$('#dermLink').addEventListener('click',()=>track('derm_link_click',{link_url:$('#dermLink').href,score:G.endScore,rank_level:(G.endRank||0)+1,language:LANG}));
 $('#quitBtn').addEventListener('click',()=>{if(G.mode==='play')track('game_quit',{score:G.score,duration_sec:Math.round(G.clock-G.startClock)});goHome();});
 $('#startSound').addEventListener('click',()=>startGame(true));
 $('#startMuted').addEventListener('click',()=>startGame(false));
