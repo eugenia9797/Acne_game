@@ -1,7 +1,7 @@
 // 擠痘木頭人 leaderboard API (Cloudflare Pages Function + D1, binding name "DB").
 //   GET  /api/scores?player=<id>   → top 50 + total players + this player's rank
 //   POST /api/scores               → {player, name, score, duration, lang}; keeps each player's best score
-// Players are anonymous: a random id kept in their browser plus a nickname.
+// Players are anonymous: a random id kept in their browser plus a nickname (1-10 characters, no word filter).
 // To hide an entry, run in the D1 console:  UPDATE players SET hidden = 1 WHERE name = '...';
 
 const TOP_N = 50;
@@ -9,18 +9,6 @@ const NAME_MAX = 10;
 const MIN_GAP_MS = 4000;             // one submission per IP every few seconds
 const ALLOWED = [/^https:\/\/esheen\.skin$/, /^https:\/\/([a-z0-9-]+\.)?acne-game\.pages\.dev$/];
 
-const BAD_WORDS = [
-  // 中文
-  '幹', '靠北', '靠杯', '靠夭', '操你', '肏', '屌', '雞巴', '機掰', '機巴', '雞掰', '屄', '婊', '妓', '賤人', '賤貨',
-  '他媽', '你媽', '媽的', '王八', '智障', '白痴', '白癡', '低能', '去死', '幹你娘', '淫', '色情', '做愛', '性交', '陰莖', '陰道', '強姦', '強暴',
-  '共匪', '支那', '台巴子',
-  // English
-  'fuck', 'shit', 'bitch', 'cunt', 'dick', 'pussy', 'nigger', 'nigga', 'faggot', 'slut', 'whore', 'porn', 'rape', 'nazi', 'asshole', 'retard', 'penis', 'vagina',
-  // 日本語
-  'しね', '死ね', 'ちんこ', 'ちんぽ', 'まんこ', 'セックス', 'きちがい', 'キチガイ',
-  // 한국어
-  '씨발', '시발', '병신', '좆', '개새끼', '섹스', '니미',
-];
 
 function corsHeaders(request) {
   const origin = request.headers.get('Origin') || '';
@@ -48,12 +36,6 @@ function cleanName(raw) {
   const name = raw.normalize('NFKC').replace(INVISIBLE, '').replace(/\s+/g, ' ').trim();
   const len = Array.from(name).length;
   if (len < 1 || len > NAME_MAX) return { error: 'bad_name' };
-  const lower = name.toLowerCase();
-  if (/https?:|www\.|\.(com|net|org|tw|io|me|co|cc|xyz|app|shop)\b|line\.me|@|#/.test(lower)) return { error: 'bad_name' };
-  if ((lower.match(/[0-9０-９]/g) || []).length >= 6) return { error: 'bad_name' };
-  const squashed = lower.replace(/[\s._\-*~!$%^&()+=|\\/:;"'<>,?·・。，！？「」【】\[\]{}0-9]/g, '');
-  const leet = squashed.replace(/[@4]/g, 'a').replace(/3/g, 'e').replace(/[1!]/g, 'i').replace(/0/g, 'o').replace(/5/g, 's');
-  if (BAD_WORDS.some((w) => squashed.includes(w) || leet.includes(w))) return { error: 'bad_name' };
   return { name };
 }
 

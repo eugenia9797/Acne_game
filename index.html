@@ -134,7 +134,7 @@ body{
 @keyframes toastIn{0%{transform:translateY(-50%) scale(.6)}60%{transform:translateY(-50%) scale(1.08)}100%{transform:translateY(-50%) scale(1)}}
 
 .goo{position:fixed;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
-.overlay{position:fixed;inset:0;z-index:8;display:grid;place-items:center;overflow:auto;touch-action:pan-y;background:rgba(42,40,56,.4);
+.overlay{position:fixed;inset:0;z-index:8;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;overflow:auto;touch-action:pan-y;background:rgba(42,40,56,.4);
   padding-top:max(16px,env(safe-area-inset-top,0px));padding-bottom:max(16px,env(safe-area-inset-bottom,0px));
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .card{width:100%;max-width:420px;background:var(--paper);border:3px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink);padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px}
@@ -187,7 +187,7 @@ body{
 .linkbtn{align-self:center;font:inherit;font-size:15px;padding:2px 8px;background:none;border:0;color:var(--mint-deep);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
 .lb-row{display:flex;flex-direction:column;gap:4px;margin-top:-2px}
 .lb-form{display:flex;gap:6px}
-.lb-input{flex:1;min-width:0;font:inherit;font-size:16px;padding:7px 12px;border:2px solid var(--ink);border-radius:12px;background:var(--paper);color:var(--ink);-webkit-user-select:text;user-select:text}
+.lb-input{flex:1 1 0;width:0;min-width:0;font:inherit;font-size:16px;padding:7px 12px;border:2px solid var(--ink);border-radius:12px;background:var(--paper);color:var(--ink);-webkit-user-select:text;user-select:text}
 .lb-input::placeholder{color:var(--ink-soft)}
 .lb-go{flex:none;font:inherit;font-size:15px;padding:0 16px;border:2px solid var(--ink);border-radius:12px;background:var(--warn);color:var(--ink);box-shadow:0 2px 0 var(--ink);cursor:pointer;white-space:nowrap}
 .lb-go:active{transform:translateY(2px);box-shadow:none}
@@ -289,7 +289,7 @@ body{
     </div>
     <div class="lb-row" id="lbRow" hidden>
       <form class="lb-form" id="lbForm" hidden>
-        <input id="lbInput" class="lb-input" type="text" maxlength="24" autocomplete="nickname" enterkeyhint="done" placeholder="輸入暱稱上榜" aria-label="暱稱">
+        <input id="lbInput" class="lb-input" type="text" size="1" maxlength="24" autocomplete="nickname" enterkeyhint="done" placeholder="輸入暱稱上榜" aria-label="暱稱">
         <button class="lb-go" id="lbGo" type="submit" data-t="lbSubmit">上榜</button>
       </form>
       <div class="lb-status" id="lbStatus" hidden><span id="lbText"></span><button type="button" class="lb-link" id="lbRename" data-t="lbRename" hidden>改名</button><button type="button" class="lb-link" id="lbView" data-t="lbView" hidden>看排行榜</button></div>
