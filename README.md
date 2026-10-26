@@ -13,12 +13,20 @@
 - 醫師每唱完一輪會冒出 1～2 顆新痘痘，左邊的「不開心」量表爆表（20 顆）就輸。
 - 每 100 分升一級，共 30 種痘疤稱號。分數畫面的臉就是被抓到那一刻的樣子：臉上剩下的痘痘、這局留下的痘疤都會保留。
 - 分數畫面的「分享」會直接打開手機的分享選單，帶著一張分享圖（痘疤臉、分數、稱號）和一段文字加網址，玩家自己選要傳到哪裡。不支援的瀏覽器會改成顯示圖片（可長按儲存）和複製文字的按鈕。`og.png` 是貼網址時的預覽圖。
+- 歷史總排行榜：每位玩家只留最佳成績。第一次在分數畫面輸入暱稱（10 字以內，會擋髒話、網址、電話），之後每局自動上傳；開始畫面可看前 50 名。
 - 支援中文、English、日本語、한국어，開始畫面可切換，會自動依手機語言預選。
 - 右上角可開關音效、切換語言、結束遊戲；每局結束後回到開始畫面。
 
 ## 技術
 
 單一 `index.html`，不需要建置步驟。已裝 Google Analytics（GA4，評估 ID `G-FTBL57HWEV`），除了瀏覽量還會送出遊戲事件：`game_start`、`game_over`、`game_quit`、`share`、`share_action`、`language_change`、`derm_link_click`。分數畫面連到青春痘衛教頁的網址帶有 `?from=acne-game`，在衛教頁那邊也能算出從遊戲過來的人數。畫面用 Canvas 繪製，音樂和音效用 Web Audio API 即時合成，字型來自 Google Fonts（Huninn、Kosugi Maru、Jua、Lilita One）。
+
+## 排行榜
+
+- API：`functions/api/scores.js`（Cloudflare Pages Function），資料存在 D1 資料庫 `acne-game-leaderboard`，在 acne-game 專案綁定為 `DB`。第一次呼叫時會自動建立資料表。
+- 遊戲從 esheen.skin 直接呼叫 `https://acne-game.pages.dev/api/scores`（只允許 esheen.skin 與 acne-game.pages.dev 來源）。
+- 隱藏不適合的暱稱：在 D1 的 Console 執行 `UPDATE players SET hidden = 1 WHERE name = '暱稱';`
+- 防作弊：同一個 IP 4 秒內只能送一次；分數超過「120 + 遊戲秒數 × 150」視為不合理。
 
 ## 網址與部署
 

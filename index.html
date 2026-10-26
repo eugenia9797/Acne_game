@@ -184,6 +184,28 @@ body{
 .endrank b{display:block;font-weight:400;font-size:19px;line-height:1.2;color:var(--ink)}
 .sev{display:inline-block;margin-top:3px;font-size:12px;padding:1px 9px;border-radius:999px;background:var(--pop);color:var(--paper)}
 .tip{background:var(--tile);border-radius:14px;padding:9px 12px;font-size:13.5px;line-height:1.5}
+.linkbtn{align-self:center;font:inherit;font-size:15px;padding:2px 8px;background:none;border:0;color:var(--mint-deep);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.lb-row{display:flex;flex-direction:column;gap:4px;margin-top:-2px}
+.lb-form{display:flex;gap:6px}
+.lb-input{flex:1;min-width:0;font:inherit;font-size:16px;padding:7px 12px;border:2px solid var(--ink);border-radius:12px;background:var(--paper);color:var(--ink);-webkit-user-select:text;user-select:text}
+.lb-input::placeholder{color:var(--ink-soft)}
+.lb-go{flex:none;font:inherit;font-size:15px;padding:0 16px;border:2px solid var(--ink);border-radius:12px;background:var(--warn);color:var(--ink);box-shadow:0 2px 0 var(--ink);cursor:pointer;white-space:nowrap}
+.lb-go:active{transform:translateY(2px);box-shadow:none}
+.lb-status{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;font-size:14.5px;line-height:1.4;color:var(--ink)}
+.lb-status .err{color:var(--pop)}
+.lb-link{font:inherit;font-size:13.5px;padding:0;background:none;border:0;color:var(--mint-deep);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.lbcard{gap:10px;padding:14px 16px 16px;max-width:400px;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px)}
+.lb-list{list-style:none;margin:0;padding:0 2px;flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:5px;touch-action:pan-y;overscroll-behavior:contain}
+.lb-item{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:10px;padding:6px 10px 6px 6px;border-radius:12px;background:var(--tile)}
+.lb-item.me{background:var(--warn);box-shadow:inset 0 0 0 2px var(--ink)}
+.lb-rank{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;font-family:var(--f-num);font-size:16px;font-variant-numeric:tabular-nums}
+.lb-item.r1 .lb-rank{background:#ffd45e;box-shadow:inset 0 0 0 2px var(--ink)}
+.lb-item.r2 .lb-rank{background:#e3e8ee;box-shadow:inset 0 0 0 2px var(--ink)}
+.lb-item.r3 .lb-rank{background:#e7a873;box-shadow:inset 0 0 0 2px var(--ink)}
+.lb-name{min-width:0;font-size:15.5px;line-height:1.25;overflow-wrap:anywhere}
+.lb-name small{display:block;font-size:12px;color:var(--ink-soft)}
+.lb-score{font-family:var(--f-num);font-size:20px;font-variant-numeric:tabular-nums}
+.lb-me{margin:0;min-height:1.3em;font-size:14px;text-align:center;color:var(--ink-soft)}
 .tip-link{display:block;width:fit-content;margin-top:6px;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--mint-deep);font-size:14px;text-decoration:none}
 .tip-link:hover{background:var(--mint-deep);color:var(--paper)}
 @media (max-width:380px){.num{font-size:22px}}
@@ -251,6 +273,7 @@ body{
     <p class="hint"><svg class="spk" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9h4l5-4.2v14.4l-5-4.2h-4z"/><path class="wv" d="M16 8.6a4.8 4.8 0 0 1 0 6.8M18.6 6a8.5 8.5 0 0 1 0 12"/></svg><span data-t="hint">開音效更好玩！要聽音樂，才知道醫師什麼時候回頭。</span></p>
     <button class="btn" id="startSound" type="button" data-t="playSound">開音效開始</button>
     <button class="btn ghost" id="startMuted" type="button" data-t="playMuted">靜音開始</button>
+    <button class="linkbtn" id="lbOpenStart" type="button" data-t="lbOpen">查看排行榜 →</button>
     <div class="best" id="bestStart"></div>
   </div>
 </div>
@@ -264,11 +287,26 @@ body{
       <div class="big"><span id="endScore">0</span><small id="endUnit">分</small></div>
       <div class="endrank"><span id="endBadge"></span><div><span class="lab2" data-t="titleLab">你的稱號</span><b id="endRank">痘疤小屁孩</b><span class="sev" id="endSev">輕微痘疤</span></div></div>
     </div>
+    <div class="lb-row" id="lbRow" hidden>
+      <form class="lb-form" id="lbForm" hidden>
+        <input id="lbInput" class="lb-input" type="text" maxlength="24" autocomplete="nickname" enterkeyhint="done" placeholder="輸入暱稱上榜" aria-label="暱稱">
+        <button class="lb-go" id="lbGo" type="submit" data-t="lbSubmit">上榜</button>
+      </form>
+      <div class="lb-status" id="lbStatus" hidden><span id="lbText"></span><button type="button" class="lb-link" id="lbRename" data-t="lbRename" hidden>改名</button><button type="button" class="lb-link" id="lbView" data-t="lbView" hidden>看排行榜</button></div>
+    </div>
     <div class="tip"><span data-t="tip">有痘痘或痘疤問題，記得找皮膚專科醫師評估與治療唷！</span><a class="tip-link" id="dermLink" href="https://esheen.skin/conditions/acne/acne-vulgaris/?from=acne-game" target="_blank" rel="noopener"><span data-t="tipLink">青春痘/痘疤問題點我看更多</span> →</a></div>
     <div class="endbtns">
       <button class="btn share" id="shareBtn" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 13v6h14v-6"/></svg><span data-t="share">分享</span></button>
       <button class="btn" id="againBtn" type="button" data-t="again">再擠一次</button>
     </div>
+  </div>
+</div>
+
+<div class="overlay" id="lbScreen" hidden>
+  <div class="card lbcard" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
+    <div class="share-head"><h2 id="lbTitle" data-t="lbTitle">排行榜</h2><button id="lbClose" class="icon-btn" type="button" aria-label="關閉"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button></div>
+    <ol class="lb-list" id="lbList"></ol>
+    <p class="lb-me" id="lbMe"></p>
   </div>
 </div>
 
@@ -308,6 +346,7 @@ const I18N={
     pop:'啵！',sprout:'冒出來了',scar:'留疤',step:'叩！',
     sayCaught:'不是叫你別擠嗎！',sayFull:'整臉都是痘痘了！',nurseSay:'醫師！他在擠痘痘！',
     eyebrow:'遊戲結束',share:'分享',shareTitle:'分享你的痘疤臉',close:'關閉',save:'儲存圖片',copy:'複製連結',copied:'已複製，可以貼到任何地方',more:'更多',copyText:'複製文字和連結',shareLink:'分享連結',longPress:'長按圖片可以存到手機',
+    lbTitle:'排行榜',lbOpen:'查看排行榜 →',lbPlaceholder:'輸入暱稱上榜',lbSubmit:'上榜',lbSending:'上榜中…',lbRank:(r,t)=>'排行第 '+r+' 名（共 '+t+' 人）',lbBest:(b,r)=>'你的最佳 '+b+' 分・第 '+r+' 名',lbRename:'改名',lbView:'看排行榜',lbError:'排行榜暫時連不上',lbBadName:'這個暱稱不能用，換一個吧',lbTooLong:'暱稱最多 10 個字',lbTooFast:'太快了，等一下再試',lbEmpty:'還沒有人上榜，搶第一！',lbLoading:'載入中…',lbMeLine:(r,b)=>'你目前第 '+r+' 名・'+b+' 分',lbNotRanked:'玩一局就能上榜',lbNameAria:'暱稱',
     shareText:(s,r)=>'我在「擠痘木頭人」拿到 '+s+' 分，稱號是「'+r+'」！換你來挑戰：',cardCta:'換你來挑戰 →',cardTagline:'趁醫師背對你時偷偷擠痘痘',
     saveTip:'如果沒有自動下載，長按圖片就能存到手機。',igTip:'Instagram 不支援從網頁直接分享：長按圖片存到手機，再到 Instagram 發限動或貼文。',msgTip:'Messenger 要在手機上分享。連結已複製，也可以直接貼上。',
     endNurse:'被護理師告密了！',endFull:'不開心爆表，出局！',endEarly:'才剛開始就被抓！',endDoc:'被醫師抓包了！',endPro:'擠痘高手，還是被抓',
@@ -334,6 +373,7 @@ const I18N={
     pop:'Pop! ',sprout:'New zit!',scar:'Scar',step:'Clack!',
     sayCaught:'I said no squeezing!',sayFull:'Your face is all zits!',nurseSay:"Doctor! He's popping zits!",
     eyebrow:'Game over',share:'Share',shareTitle:'Share your scar face',close:'Close',save:'Save image',copy:'Copy link',copied:'Copied. Paste it anywhere.',more:'More',copyText:'Copy text & link',shareLink:'Share link',longPress:'Long-press the image to save it',
+    lbTitle:'Leaderboard',lbOpen:'View leaderboard →',lbPlaceholder:'Nickname for the leaderboard',lbSubmit:'Submit',lbSending:'Submitting…',lbRank:(r,t)=>'Rank #'+r+' of '+t,lbBest:(b,r)=>'Your best: '+b+' · #'+r,lbRename:'Rename',lbView:'Leaderboard',lbError:'Leaderboard is unavailable right now',lbBadName:'Please choose a different nickname',lbTooLong:'Up to 10 characters',lbTooFast:'Too fast. Try again in a moment',lbEmpty:'No scores yet. Be the first!',lbLoading:'Loading…',lbMeLine:(r,b)=>'You: #'+r+' · '+b,lbNotRanked:'Play a game to get on the board',lbNameAria:'Nickname',
     shareText:(s,r)=>'I scored '+s+' in Zit Freeze and earned the title "'+r+'". Your turn:',cardCta:'Your turn →',cardTagline:"Squeeze zits while the doctor isn't looking",
     saveTip:'If nothing downloads, long-press the image to save it.',igTip:"Instagram doesn't take shares from websites. Long-press the image to save it, then post it to your story or feed.",msgTip:'Messenger sharing works on phones. The link is copied, so you can paste it.',
     endNurse:'The nurse told on you!',endFull:'Too grumpy. Game over!',endEarly:'Caught right away!',endDoc:'Busted by the doctor!',endPro:'Zit pro, still busted',
@@ -360,6 +400,7 @@ const I18N={
     pop:'プチッ！',sprout:'できた！',scar:'跡が残った',step:'コツッ！',
     sayCaught:'つぶさないでって言ったでしょ！',sayFull:'顔中ニキビだらけ！',nurseSay:'先生！ニキビつぶしてます！',
     eyebrow:'ゲームオーバー',share:'シェア',shareTitle:'ニキビ跡顔をシェア',close:'閉じる',save:'画像を保存',copy:'リンクをコピー',copied:'コピーしました。どこにでも貼り付けられます',more:'その他',copyText:'テキストとリンクをコピー',shareLink:'リンクをシェア',longPress:'画像を長押しすると保存できます',
+    lbTitle:'ランキング',lbOpen:'ランキングを見る →',lbPlaceholder:'ニックネームを入力',lbSubmit:'登録',lbSending:'登録中…',lbRank:(r,t)=>t+'人中 '+r+'位',lbBest:(b,r)=>'ベスト '+b+'点・'+r+'位',lbRename:'名前を変更',lbView:'ランキング',lbError:'ランキングに接続できません',lbBadName:'このニックネームは使えません',lbTooLong:'ニックネームは10文字まで',lbTooFast:'少し待ってから試してね',lbEmpty:'まだ誰もいません。一番乗りしよう！',lbLoading:'読み込み中…',lbMeLine:(r,b)=>'あなた：'+r+'位・'+b+'点',lbNotRanked:'1回遊ぶとランキングに載ります',lbNameAria:'ニックネーム',
     shareText:(s,r)=>'「ニキビがころんだ」で'+s+'点、称号は「'+r+'」！挑戦してみて：',cardCta:'挑戦してみて →',cardTagline:'先生が見ていないすきにニキビをつぶせ',
     saveTip:'保存されない場合は、画像を長押しして保存してね。',igTip:'Instagramはウェブから直接シェアできません。画像を長押しして保存し、ストーリーや投稿でシェアしてね。',msgTip:'Messengerへのシェアはスマホから。リンクをコピーしたので貼り付けてね。',
     endNurse:'看護師に告げ口された！',endFull:'不機嫌MAXでアウト！',endEarly:'始まってすぐバレた！',endDoc:'先生にバレた！',endPro:'つぶしの達人も、ついにバレた',
@@ -386,6 +427,7 @@ const I18N={
     pop:'톡! ',sprout:'또 났다!',scar:'흉터',step:'또각!',
     sayCaught:'짜지 말라고 했지!',sayFull:'얼굴이 여드름투성이야!',nurseSay:'선생님! 여드름 짜고 있어요!',
     eyebrow:'게임 오버',share:'공유',shareTitle:'흉터 얼굴 공유하기',close:'닫기',save:'이미지 저장',copy:'링크 복사',copied:'복사했어요. 어디든 붙여 넣을 수 있어요',more:'더보기',copyText:'문구와 링크 복사',shareLink:'링크 공유',longPress:'이미지를 길게 누르면 저장할 수 있어요',
+    lbTitle:'랭킹',lbOpen:'랭킹 보기 →',lbPlaceholder:'닉네임 입력',lbSubmit:'등록',lbSending:'등록 중…',lbRank:(r,t)=>t+'명 중 '+r+'위',lbBest:(b,r)=>'최고 '+b+'점・'+r+'위',lbRename:'이름 변경',lbView:'랭킹',lbError:'랭킹에 연결할 수 없어요',lbBadName:'이 닉네임은 쓸 수 없어요',lbTooLong:'닉네임은 10자까지',lbTooFast:'잠시 후 다시 시도해 주세요',lbEmpty:'아직 아무도 없어요. 첫 번째가 되어 봐!',lbLoading:'불러오는 중…',lbMeLine:(r,b)=>'나: '+r+'위・'+b+'점',lbNotRanked:'한 판 하면 랭킹에 올라가요',lbNameAria:'닉네임',
     shareText:(s,r)=>"'여드름 꽃이 피었습니다'에서 "+s+"점, 칭호는 '"+r+"'! 너도 도전해 봐:",cardCta:'도전해 봐 →',cardTagline:'선생님이 안 볼 때 몰래 여드름 짜기',
     saveTip:'저장되지 않으면 이미지를 길게 눌러 저장해 주세요.',igTip:'인스타그램은 웹에서 바로 공유할 수 없어요. 이미지를 길게 눌러 저장한 뒤 스토리나 게시물로 올려 주세요.',msgTip:'메신저 공유는 휴대폰에서 돼요. 링크를 복사했으니 붙여 넣어 주세요.',
     endNurse:'간호사가 일러바쳤다!',endFull:'기분 폭발, 아웃!',endEarly:'시작하자마자 들켰다!',endDoc:'선생님한테 들켰다!',endPro:'여드름 고수도 결국 들켰다',
@@ -1559,7 +1601,7 @@ function showEnd(){
   const eb=$('#endBadge');eb.textContent='';const bc=$('#rankBadge').cloneNode(true);bc.removeAttribute('id');eb.append(bc);
   G.endScore=G.score;G.endRank=rk;
   G.endSnap={pimples:G.pimples.map(p=>({...p})),scars:G.scars.map(x=>({...x})),marks:G.marks.map(m=>({...m})),expr:G.expr==='worry'?'worry':'caught'};
-  $('#endScreen').hidden=false;updateBest();renderPortrait(G.endSnap);fitEnd();prepareShare();
+  $('#endScreen').hidden=false;updateBest();renderPortrait(G.endSnap);fitEnd();prepareShare();lbOnEnd();
   setStatus('menu');
   try{$('#againBtn').focus({preventScroll:true});}catch(e){}
 }
@@ -1593,7 +1635,7 @@ function goHome(){
   G.score=0;$('#score').textContent='0';G.goo=[];G.texts=[];G.parts=[];G.marks=[];G.scars=[];G.expr='idle';G.exprT=0;G.shake=0;
   mom.angry=0;mom.caughtThis=false;mom.speed=undefined;
   spawnStart();startChant();setRank(0,false);statusNow='';setStatus('menu');updateBest();openLangMenu(false);
-  $('#endScreen').hidden=true;$('#startScreen').hidden=false;
+  $('#endScreen').hidden=true;$('#lbScreen').hidden=true;$('#startScreen').hidden=false;
   try{$('#startSound').focus({preventScroll:true});}catch(e){}
 }
 function buildChant(){
@@ -1613,7 +1655,8 @@ function applyLang(code,save){
   document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=L[el.dataset.t];});
   document.querySelectorAll('.lang').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===code)));
   $('#langCode').textContent=L.code;
-  $('#shareClose').setAttribute('aria-label',L.close);
+  $('#shareClose').setAttribute('aria-label',L.close);$('#lbClose').setAttribute('aria-label',L.close);
+  $('#lbInput').placeholder=L.lbPlaceholder;$('#lbInput').setAttribute('aria-label',L.lbNameAria);
   for(const [id,key] of [['#langBtn','aLang'],['#quitBtn','aQuit']]){const b=$(id);b.setAttribute('aria-label',L[key]);b.title=L[key];}
   cv.setAttribute('aria-label',L.stageAria);$('#mood').setAttribute('aria-label',L.mood);$('#portrait').setAttribute('aria-label',L.portraitAria);
   buildChant();updateMuteBtn();setRank(rankOf(G.score),false);statusNow='';setStatus(statusKey());updateBest();
@@ -1752,6 +1795,106 @@ $('#shSave').addEventListener('click',async()=>{
 });
 $('#shCopy').addEventListener('click',copyShareText);
 $('#shMore').addEventListener('click',async()=>{track('share_action',{action:'share_link'});try{await navigator.share({title:L.name,text:shareTextNow()});}catch(e){}});
+/* ---------- leaderboard: all-time best score per player; the nickname is typed once and remembered ---------- */
+const LB_API='https://acne-game.pages.dev/api/scores';
+const lbGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
+const lbSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+let lbPlayer=lbGet('pimple-player');
+if(!lbPlayer||!/^[a-zA-Z0-9-]{8,64}$/.test(lbPlayer)){
+  lbPlayer=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():('p-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12));
+  lbSet('pimple-player',lbPlayer);
+}
+let lbName=lbGet('pimple-name')||'';
+let lbSent=false;   // this game's score has been submitted
+async function lbCall(body,qs){
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),8000);
+  try{
+    const r=await fetch(LB_API+(qs||''),body
+      ?{method:'POST',body:JSON.stringify(body),headers:{'Content-Type':'text/plain;charset=UTF-8'},signal:ctl.signal}
+      :{signal:ctl.signal});
+    return await r.json();
+  }catch(e){return {ok:false,error:'network'};}
+  finally{clearTimeout(t);}
+}
+// mode 'form' shows the nickname box; mode 'status' shows a line of text with optional links
+function lbState(mode,text,opts){
+  opts=opts||{};
+  $('#lbRow').hidden=false;
+  $('#lbForm').hidden=mode!=='form';
+  $('#lbStatus').hidden=!text;
+  const t=$('#lbText');t.textContent=text||'';t.classList.toggle('err',!!opts.err);
+  $('#lbRename').hidden=!(mode==='status'&&opts.links&&lbName);
+  $('#lbView').hidden=!(mode==='status'&&opts.links);
+  fitEnd();
+}
+async function lbSubmit(name,score){
+  lbState('status',L.lbSending);
+  const body={player:lbPlayer,name,score,duration:Math.round(G.lostAt-G.startClock),lang:LANG};
+  let res=await lbCall(body);
+  if(!res.ok&&res.error==='too_fast'){await new Promise(r=>setTimeout(r,4300));res=await lbCall(body);}
+  if($('#endScreen').hidden)return;
+  if(res.ok){
+    lbName=res.name;lbSet('pimple-name',lbName);lbSent=true;
+    track('leaderboard_submit',{score,rank:res.rank||0,improved:!!res.improved});
+    const line=!res.rank?L.lbNotRanked:(res.improved&&score>0)?L.lbRank(res.rank,res.total):L.lbBest(res.best,res.rank);
+    lbState('status',line,{links:true});
+    return;
+  }
+  if(res.error==='bad_name'){
+    const i=$('#lbInput');i.value=name;lbState('form',L.lbBadName,{err:true});
+    try{i.focus({preventScroll:true});}catch(e){}
+    return;
+  }
+  lbState('status',res.error==='too_fast'?L.lbTooFast:L.lbError,{err:true});
+}
+function lbOnEnd(){
+  lbSent=false;
+  if(!lbName){$('#lbInput').value='';lbState('form','');return;}
+  if(G.endScore>0){lbSubmit(lbName,G.endScore);return;}
+  lbState('status',L.lbLoading);
+  lbCall(null,'?player='+encodeURIComponent(lbPlayer)).then(res=>{
+    if($('#endScreen').hidden)return;
+    if(res.ok&&res.me)lbState('status',L.lbBest(res.me.best,res.me.rank),{links:true});
+    else if(res.ok)lbState('status',L.lbNotRanked,{links:true});
+    else lbState('status',L.lbError,{err:true});
+  });
+}
+async function openLeaderboard(from){
+  track('leaderboard_open',{from});
+  const list=$('#lbList'),me=$('#lbMe');
+  list.textContent='';me.textContent=L.lbLoading;
+  $('#lbScreen').hidden=false;
+  try{$('#lbClose').focus({preventScroll:true});}catch(e){}
+  const res=await lbCall(null,'?player='+encodeURIComponent(lbPlayer));
+  if(!res.ok){me.textContent=L.lbError;return;}
+  if(!res.top.length){me.textContent=L.lbEmpty;return;}
+  for(const r of res.top){
+    const li=document.createElement('li');
+    li.className='lb-item'+(r.me?' me':'')+(r.rank<=3?' r'+r.rank:'');
+    const a=document.createElement('span');a.className='lb-rank';a.textContent=r.rank;
+    const n=document.createElement('span');n.className='lb-name';n.textContent=r.name;
+    const sm=document.createElement('small');sm.textContent=RANKS[Math.min(RANKS.length-1,r.level|0)];n.append(sm);
+    const sc=document.createElement('span');sc.className='lb-score';sc.textContent=r.best;
+    li.append(a,n,sc);list.append(li);
+  }
+  me.textContent=res.me?L.lbMeLine(res.me.rank,res.me.best):L.lbNotRanked;
+  const mine=list.querySelector('.me');if(mine)mine.scrollIntoView({block:'center'});
+}
+$('#lbForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const i=$('#lbInput'),v=i.value.replace(/\s+/g,' ').trim();
+  if(!v){try{i.focus();}catch(err){}return;}
+  if(Array.from(v).length>10){lbState('form',L.lbTooLong,{err:true});return;}
+  i.blur();
+  lbSubmit(v,lbSent?0:G.endScore);
+});
+$('#lbRename').addEventListener('click',()=>{const i=$('#lbInput');i.value=lbName;lbState('form','');try{i.focus();i.select();}catch(e){}});
+$('#lbView').addEventListener('click',()=>openLeaderboard('end'));
+$('#lbOpenStart').addEventListener('click',()=>openLeaderboard('start'));
+$('#lbClose').addEventListener('click',()=>{$('#lbScreen').hidden=true;});
+$('#lbScreen').addEventListener('click',e=>{if(e.target===$('#lbScreen'))$('#lbScreen').hidden=true;});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#lbScreen').hidden)$('#lbScreen').hidden=true;});
+
 applyLang(detectLang(),false);layout();spawnStart();startChant();setRank(0,false);setStatus('menu');updateBest();
 requestAnimationFrame(frame);
 })();
